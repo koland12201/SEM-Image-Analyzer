@@ -1,0 +1,7 @@
+Assets/
+packages/
+SEM Analyzer Alt3/bin
+
+*.dll
+*.png
+
