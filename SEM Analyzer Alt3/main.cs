@@ -160,8 +160,10 @@ namespace SEM_Analyzer_Alt3
                 ObjectAmount = 0;
                 double LargestArea = 0;
                 int LargestInd = 0;
+                double SmallestArea= 2147483647;
+                int SmallestInd = 0;
                 Array.Resize(ref FilteredArea, Contours.Size);
-                for (int i = 1; i < Contours.Size; i++)
+                for (int i = 0; i < Contours.Size; i++)
                 {
                     double Area = CvInvoke.ContourArea(Contours[i], false);
                     if (Area > MinArea && Area < MaxArea)
@@ -177,9 +179,15 @@ namespace SEM_Analyzer_Alt3
                             LargestArea = Area;
                             LargestInd = i;
                         }
+                        if (Area < SmallestArea)
+                        {
+                            SmallestArea = Area;
+                            SmallestInd = i;
+                        }
                     }
                 }
                 CvInvoke.DrawContours(RawImage, Contours, LargestInd, new MCvScalar(0, 0, 255, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
+                CvInvoke.DrawContours(RawImage, Contours, SmallestInd, new MCvScalar(255, 0, 0, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
 
 
                 if (ObjectAmount > 0)
@@ -213,7 +221,7 @@ namespace SEM_Analyzer_Alt3
                                        "Smallest Area= " + FilteredArea.Min().ToString() + "\n" +
                                        "Largest Area= " + FilteredArea.Max().ToString() + "\n" +
                                        "Mean Area= " + MeanArea.ToString() + "\n" +
-                                       "Std dev= " + StdDev.ToString() + "\n" +
+                                       "Area std dev= " + StdDev.ToString() + "\n" +
                                        "----------------------------------" +
                                        "\nConfiguration:\n" +
                                        "Threshold(R/Grey): " + RedThreshold.ToString() + "\n" +
@@ -311,7 +319,7 @@ namespace SEM_Analyzer_Alt3
         private void distrubutionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // prepare data
-            var ans = KernelDensityEstimation(FilteredArea, 20, 1000);
+            var ans = KernelDensityEstimation(FilteredArea, 50, 1000);
 
             // show plot
             Graph_Form graph_Form = new Graph_Form();
@@ -484,16 +492,32 @@ namespace SEM_Analyzer_Alt3
 
             // eval contour area 
             Array.Resize(ref FilteredArea, Contours.Size);
-            for (int i = 1; i < Contours.Size; i++)
+            double LargestArea = 0;
+            int LargestInd = 0;
+            double SmallestArea = 0;
+            int SmallestInd = 0;
+            for (int i = 0; i < Contours.Size; i++)
             {
                 double Area = CvInvoke.ContourArea(Contours[i], false);
                 if (Area > MinArea && Area < MaxArea)
                 {
                     CvInvoke.DrawContours(temp, Contours, i, new MCvScalar(0, 255, 0, 255), LineThickness);
+                    if (Area > LargestArea)
+                    {
+                        LargestArea = Area;
+                        LargestInd = i;
+                    }
+                    if (Area < SmallestArea)
+                    {
+                        SmallestArea = Area;
+                        SmallestInd = i;
+                    }
                 }
             }
+            CvInvoke.DrawContours(temp, Contours, LargestInd, new MCvScalar(0, 0, 255, 255), LineThickness);
+            CvInvoke.DrawContours(temp, Contours, SmallestInd, new MCvScalar(255, 0, 0, 255), LineThickness);
 
-
+            // pass img to next winform
             ProcessView ProcessView = new ProcessView();
             ProcessView.Image = temp.ToBitmap();
             ProcessView.ShowDialog();
@@ -513,6 +537,32 @@ namespace SEM_Analyzer_Alt3
         private void plotDataToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void DiscardLargest_Button_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                MaxArea_TextBox.Text=FilteredArea.Max().ToString();
+                MaxArea = FilteredArea.Max();
+            }
+            catch
+            {
+                MessageBox.Show("no object to discard!");
+            }
+        }
+
+        private void DiscardSmallest_Button_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                MinArea_TextBox.Text = FilteredArea.Min().ToString();
+                MinArea = FilteredArea.Min();
+            }
+            catch
+            {
+                MessageBox.Show("no object to discard!");
+            }
         }
 
         private void GreenThreshold_TrackBar_Scroll(object sender, EventArgs e)

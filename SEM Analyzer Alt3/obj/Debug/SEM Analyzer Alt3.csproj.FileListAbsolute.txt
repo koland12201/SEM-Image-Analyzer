@@ -41,3 +41,4 @@ C:\Users\User\source\repos\SEM Analyzer Alt3\SEM Analyzer Alt3\obj\Debug\SEM_Ana
 C:\Users\User\source\repos\SEM Analyzer Alt3\SEM Analyzer Alt3\bin\Debug\x64\opencv_ffmpeg343_64.dll
 C:\Users\User\source\repos\SEM Analyzer Alt3\SEM Analyzer Alt3\bin\Debug\x86\opencv_ffmpeg343.dll
 C:\Users\User\source\repos\SEM Analyzer Alt3\SEM Analyzer Alt3\obj\Debug\SEM_Analyzer_Alt3.ProcessView.resources
+C:\Users\User\source\repos\SEM Analyzer Alt3\SEM Analyzer Alt3\obj\Debug\SEM_Analyzer_Alt3.Histogram_Form.resources
