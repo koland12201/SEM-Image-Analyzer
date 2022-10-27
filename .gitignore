@@ -1,6 +1,7 @@
 Assets/
 packages/
 SEM Analyzer Alt3/bin
+.vs/
 
 *.dll
 *.png
