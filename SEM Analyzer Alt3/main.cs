@@ -33,6 +33,7 @@ namespace SEM_Analyzer_Alt3
         int ObjectAmount = 0;
         double StdDev = 0;
         double[] FilteredArea;
+        string MeasUnit = "px";
 
         //settings
         int RedThreshold, GreenThreshold, BlueThreshold;
@@ -122,94 +123,118 @@ namespace SEM_Analyzer_Alt3
         }
         protected void LoadImage()
         {
-            // import raw image from file directory
-            RawImage = new Image<Bgr, Byte>(path);
-
-            // create a copy and crop image
-            BitmapROI = RawImage.Clone();
-            BitmapROI.ROI = ROIRect;
-
-            // eval offset from ROI to global for shifting localized contour image in ROI
-            Point ROIOffset = new Point();
-            ROIOffset.X = ROIRect.X;
-            ROIOffset.Y = ROIRect.Y;
-
-            if (EnabledAnalysis)
+            
+            try
             {
-                if (Invert_CheckBox.Checked)
-                {
-                    BitmapROI = ~BitmapROI;
-                }
-                // binarization
-                if (Grayscale_CheckBox.Checked)
-                {
-                    BitmapROI = BitmapROI.ThresholdBinary(new Bgr(RedThreshold, RedThreshold, RedThreshold), new Bgr(255, 255, 255));
-                }
-                else
-                {
-                    BitmapROI = BitmapROI.ThresholdBinary(new Bgr(BlueThreshold, GreenThreshold, RedThreshold), new Bgr(255, 255, 255));
-                }
+                // import raw image from file directory
+                RawImage = new Image<Bgr, Byte>(path);
 
-                // find contour
-                BinaryROI = BitmapROI.Convert<Gray, Byte>();
+                // create a copy and crop image
+                BitmapROI = RawImage.Clone();
+                BitmapROI.ROI = ROIRect;
+            }
+            catch
+            {
+                MessageBox.Show("Import an image first!");
+            }
 
-                VectorOfVectorOfPoint Contours = new VectorOfVectorOfPoint();
-                CvInvoke.FindContours(BinaryROI, Contours, null, RetrType.List, ChainApproxMethod.ChainApproxNone);
+            try
+            {
 
-                // eval contour area 
-                ObjectAmount = 0;
-                double LargestArea = 0;
-                int LargestInd = 0;
-                double SmallestArea= 2147483647;
-                int SmallestInd = 0;
-                Array.Resize(ref FilteredArea, Contours.Size);
-                for (int i = 0; i < Contours.Size; i++)
+                // eval offset from ROI to global for shifting localized contour image in ROI
+                Point ROIOffset = new Point();
+                ROIOffset.X = ROIRect.X;
+                ROIOffset.Y = ROIRect.Y;
+
+                if (EnabledAnalysis)
                 {
-                    double Area = CvInvoke.ContourArea(Contours[i], false);
-                    if (Area > MinArea && Area < MaxArea)
+                    if (Invert_CheckBox.Checked)
                     {
-                        CvInvoke.DrawContours(RawImage, Contours, i, new MCvScalar(0, 255, 0, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
+                        BitmapROI = ~BitmapROI;
+                    }
+                    // binarization
+                    if (Grayscale_CheckBox.Checked)
+                    {
+                        BitmapROI = BitmapROI.ThresholdBinary(new Bgr(RedThreshold, RedThreshold, RedThreshold), new Bgr(255, 255, 255));
+                    }
+                    else
+                    {
+                        BitmapROI = BitmapROI.ThresholdBinary(new Bgr(BlueThreshold, GreenThreshold, RedThreshold), new Bgr(255, 255, 255));
+                    }
 
-                        // rebuild area array to exclude filtered values
-                        FilteredArea[ObjectAmount] = Area;
+                    // find contour
+                    BinaryROI = BitmapROI.Convert<Gray, Byte>();
 
-                        ObjectAmount++;
-                        if(Area> LargestArea)
+                    VectorOfVectorOfPoint Contours = new VectorOfVectorOfPoint();
+                    CvInvoke.FindContours(BinaryROI, Contours, null, RetrType.List, ChainApproxMethod.ChainApproxNone);
+
+                    // eval contour area 
+                    ObjectAmount = 0;
+                    double LargestArea = 0;
+                    int LargestInd = 0;
+                    double SmallestArea = 2147483647;
+                    int SmallestInd = 0;
+                    Array.Resize(ref FilteredArea, Contours.Size);
+                    for (int i = 0; i < Contours.Size; i++)
+                    {
+                        double Area = CvInvoke.ContourArea(Contours[i], false);
+                        if (Area > MinArea && Area < MaxArea)
                         {
-                            LargestArea = Area;
-                            LargestInd = i;
-                        }
-                        if (Area < SmallestArea)
-                        {
-                            SmallestArea = Area;
-                            SmallestInd = i;
+                            CvInvoke.DrawContours(RawImage, Contours, i, new MCvScalar(0, 255, 0, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
+
+                            // rebuild area array to exclude filtered values
+                            FilteredArea[ObjectAmount] = Area;
+
+                            ObjectAmount++;
+                            if (Area > LargestArea)
+                            {
+                                LargestArea = Area;
+                                LargestInd = i;
+                            }
+                            if (Area < SmallestArea)
+                            {
+                                SmallestArea = Area;
+                                SmallestInd = i;
+                            }
                         }
                     }
+
+                    if (HighlightLS_CheckBox.Checked)
+                    {
+                        CvInvoke.DrawContours(RawImage, Contours, LargestInd, new MCvScalar(0, 0, 255, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
+                        CvInvoke.DrawContours(RawImage, Contours, SmallestInd, new MCvScalar(255, 0, 0, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
+                    }
+
+
+                    if (ObjectAmount > 0)
+                    {
+                        // trim array from excessive empty elements
+                        Array.Resize(ref FilteredArea, ObjectAmount);
+
+                        // find avg
+                        MeanArea = FilteredArea.Average();
+
+                        // find std dev
+                        StdDev = Stddev(FilteredArea);
+                    }
+                    else
+                    {
+                        Array.Resize(ref FilteredArea, 1);
+                        FilteredArea[0] = 0;
+                        MeanArea = 0;
+                        StdDev = 0;
+                    }
+                    UpdateReport();
                 }
-                CvInvoke.DrawContours(RawImage, Contours, LargestInd, new MCvScalar(0, 0, 255, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
-                CvInvoke.DrawContours(RawImage, Contours, SmallestInd, new MCvScalar(255, 0, 0, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
-
-
-                if (ObjectAmount > 0)
+                if(validData)
                 {
-                    // trim array from excessive empty elements
-                    Array.Resize(ref FilteredArea, ObjectAmount);
-
-                    // find avg
-                    MeanArea = FilteredArea.Average();
-
-                    // find std dev
-                    StdDev = Stddev(FilteredArea);
-                }
-                else
-                {
-                    Array.Resize(ref FilteredArea, 1);
-                    FilteredArea[0] = 0;
-                    MeanArea = 0;
-                    StdDev = 0;
+                    Main_panAndZoomPictureBox.Image = RawImage.ToBitmap();
                 }
             }
-            Main_panAndZoomPictureBox.Image = RawImage.ToBitmap();
+            catch
+            {
+
+            }
 
         }
         void UpdateReport()
@@ -218,10 +243,11 @@ namespace SEM_Analyzer_Alt3
             Report_RichTextBox.Text = "----------------------------------" +
                                        "\nReport:\n" +
                                        "Objects= " + ObjectAmount.ToString() + "\n" +
-                                       "Smallest Area= " + FilteredArea.Min().ToString() + "\n" +
+                                       "Smallest = " + FilteredArea.Min().ToString() + "\n" +
                                        "Largest Area= " + FilteredArea.Max().ToString() + "\n" +
                                        "Mean Area= " + MeanArea.ToString() + "\n" +
                                        "Area std dev= " + StdDev.ToString() + "\n" +
+                                       "Unit = " + MeasUnit + "\n" +
                                        "----------------------------------" +
                                        "\nConfiguration:\n" +
                                        "Threshold(R/Grey): " + RedThreshold.ToString() + "\n" +
@@ -245,35 +271,24 @@ namespace SEM_Analyzer_Alt3
 
         private void RedThreshold_TrackBar_Scroll(object sender, EventArgs e)
         {
-            try
-            {
-                RedThreshold = RedThreshold_TrackBar.Value;
-                LoadImage();
-                UpdateReport();
-            }
-            catch { }
+            RedThreshold = RedThreshold_TrackBar.Value;
+            LoadImage();
         }
 
         private void MinArea_TextBox_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                MinArea = Convert.ToDouble(MinArea_TextBox.Text);
-                LoadImage();
-                UpdateReport();
-            }
-            catch { }
+
+            MinArea = Convert.ToDouble(MinArea_TextBox.Text);
+            LoadImage();
+
+
         }
 
         private void MaxArea_TextBox_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                MaxArea = Convert.ToDouble(MaxArea_TextBox.Text);
-                LoadImage();
-                UpdateReport();
-            }
-            catch { }
+
+            MaxArea = Convert.ToDouble(MaxArea_TextBox.Text);
+            LoadImage();
         }
 
         private void ExportAsCSV_Button_Click(object sender, EventArgs e)
@@ -285,34 +300,19 @@ namespace SEM_Analyzer_Alt3
             if (Enabled_Button.Checked)
             {
                 Enabled_Button.CheckState = CheckState.Unchecked;
-                try
-                {
-                    EnabledAnalysis = false;
-                    LoadImage();
-                    UpdateReport();
-                }
-                catch { }
+                EnabledAnalysis = false;
             }
             else
             {
                 Enabled_Button.CheckState = CheckState.Checked;
-                try
-                {
-                    EnabledAnalysis = true;
-                    LoadImage();
-                    UpdateReport();
-                }
-                catch { }
+                EnabledAnalysis = true;
             }
+            LoadImage();
         }
         private void LineThickness_TrackBar_Scroll(object sender, EventArgs e)
         {
-            try
-            {
-                LineThickness = LineThickness_TrackBar.Value;
-                LoadImage();
-                UpdateReport();
-            }catch { }
+            LineThickness = LineThickness_TrackBar.Value;
+            LoadImage();
         }
 
 
@@ -349,11 +349,7 @@ namespace SEM_Analyzer_Alt3
                 GreenThreshold_Label.Visible = true;
                 BlueThreshold_Label.Visible = true;
             }
-            if (validData)
-            {
-                LoadImage();
-                UpdateReport();
-            }
+            LoadImage();
         }
 
         private void SelectROI_Button_Click(object sender, EventArgs e)
@@ -418,12 +414,7 @@ namespace SEM_Analyzer_Alt3
 
                 ROIRect = Main_panAndZoomPictureBox.GetRectangle(ROIp1, ROIp2);
                 Refresh();
-                try
-                {
-                    LoadImage();
-                    UpdateReport();
-                }
-                catch { }
+                LoadImage();
             }
         }
         private void SelectROI_PictureBox_Draw(object sender, PaintEventArgs e)
@@ -440,12 +431,7 @@ namespace SEM_Analyzer_Alt3
 
         private void Invert_CheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            try
-            {
                 LoadImage();
-                UpdateReport();
-            }
-            catch { }
         }
 
         private void toolStripTextBox1_Click(object sender, EventArgs e)
@@ -476,8 +462,6 @@ namespace SEM_Analyzer_Alt3
 
             ProcessView.ShowDialog();
         }
-
-
 
         private void ContourView_Button_Click(object sender, EventArgs e)
         {
@@ -514,8 +498,12 @@ namespace SEM_Analyzer_Alt3
                     }
                 }
             }
-            CvInvoke.DrawContours(temp, Contours, LargestInd, new MCvScalar(0, 0, 255, 255), LineThickness);
-            CvInvoke.DrawContours(temp, Contours, SmallestInd, new MCvScalar(255, 0, 0, 255), LineThickness);
+
+            if (HighlightLS_CheckBox.Checked)
+            {
+                CvInvoke.DrawContours(temp, Contours, LargestInd, new MCvScalar(0, 0, 255, 255), LineThickness);
+                CvInvoke.DrawContours(temp, Contours, SmallestInd, new MCvScalar(255, 0, 0, 255), LineThickness);
+            }
 
             // pass img to next winform
             ProcessView ProcessView = new ProcessView();
@@ -527,11 +515,6 @@ namespace SEM_Analyzer_Alt3
         {
             Point temp = new Point(0,0);
             Main_panAndZoomPictureBox.SetZoomScale(1, temp);
-        }
-
-        private void toolStripDropDownButton2_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void plotDataToolStripMenuItem_Click(object sender, EventArgs e)
@@ -565,18 +548,28 @@ namespace SEM_Analyzer_Alt3
             }
         }
 
+        private void HighlightLS_CheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            LoadImage();
+        }
+
+        private void colorHistogramToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Histogram_Form HistogramView = new Histogram_Form();
+            Histogram_Form.Image = BitmapROI;
+            HistogramView.ShowDialog();
+        }
+
         private void GreenThreshold_TrackBar_Scroll(object sender, EventArgs e)
         {
             GreenThreshold = GreenThreshold_TrackBar.Value;
             LoadImage();
-            UpdateReport();
         }
 
         private void BlueThreshold_TrackBar_Scroll(object sender, EventArgs e)
         {
             BlueThreshold = BlueThreshold_TrackBar.Value;
             LoadImage();
-            UpdateReport();
         }
         public static Tuple<double[], double[]> KernelDensityEstimation(double[] data, double sigma, int nsteps)
         {

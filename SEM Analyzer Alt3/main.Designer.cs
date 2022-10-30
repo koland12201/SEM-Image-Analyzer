@@ -64,9 +64,11 @@
             this.MinArea_TextBox = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.HighlightLS_CheckBox = new System.Windows.Forms.CheckBox();
             this.LineThickness_TrackBar = new System.Windows.Forms.TrackBar();
             this.label3 = new System.Windows.Forms.Label();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.Binarization_Tooltip = new System.Windows.Forms.RichTextBox();
             this.Invert_CheckBox = new System.Windows.Forms.CheckBox();
             this.BlueThreshold_Label = new System.Windows.Forms.Label();
             this.GreenThreshold_Label = new System.Windows.Forms.Label();
@@ -76,7 +78,6 @@
             this.GreenThreshold_TrackBar = new System.Windows.Forms.TrackBar();
             this.RedThreshold_TrackBar = new System.Windows.Forms.TrackBar();
             this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.Binarization_Tooltip = new System.Windows.Forms.RichTextBox();
             this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.DragIcon_PictureBox)).BeginInit();
             this.toolStrip1.SuspendLayout();
@@ -277,8 +278,9 @@
             // colorHistogramToolStripMenuItem
             // 
             this.colorHistogramToolStripMenuItem.Name = "colorHistogramToolStripMenuItem";
-            this.colorHistogramToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.colorHistogramToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.colorHistogramToolStripMenuItem.Text = "Color Histogram";
+            this.colorHistogramToolStripMenuItem.Click += new System.EventHandler(this.colorHistogramToolStripMenuItem_Click);
             // 
             // processToolStripMenuItem
             // 
@@ -402,19 +404,34 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.HighlightLS_CheckBox);
             this.groupBox1.Controls.Add(this.LineThickness_TrackBar);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Location = new System.Drawing.Point(9, 6);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(219, 88);
+            this.groupBox1.Size = new System.Drawing.Size(219, 87);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Visualization";
             // 
+            // HighlightLS_CheckBox
+            // 
+            this.HighlightLS_CheckBox.AutoSize = true;
+            this.HighlightLS_CheckBox.Checked = true;
+            this.HighlightLS_CheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.HighlightLS_CheckBox.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.HighlightLS_CheckBox.Location = new System.Drawing.Point(63, 57);
+            this.HighlightLS_CheckBox.Name = "HighlightLS_CheckBox";
+            this.HighlightLS_CheckBox.Size = new System.Drawing.Size(152, 16);
+            this.HighlightLS_CheckBox.TabIndex = 3;
+            this.HighlightLS_CheckBox.Text = "Highlight Largest / Smallest";
+            this.HighlightLS_CheckBox.UseVisualStyleBackColor = true;
+            this.HighlightLS_CheckBox.CheckedChanged += new System.EventHandler(this.HighlightLS_CheckBox_CheckedChanged);
+            // 
             // LineThickness_TrackBar
             // 
             this.LineThickness_TrackBar.LargeChange = 1;
-            this.LineThickness_TrackBar.Location = new System.Drawing.Point(92, 10);
+            this.LineThickness_TrackBar.Location = new System.Drawing.Point(98, 21);
             this.LineThickness_TrackBar.Maximum = 5;
             this.LineThickness_TrackBar.Minimum = 1;
             this.LineThickness_TrackBar.Name = "LineThickness_TrackBar";
@@ -427,7 +444,7 @@
             // 
             this.label3.AutoSize = true;
             this.label3.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
-            this.label3.Location = new System.Drawing.Point(8, 19);
+            this.label3.Location = new System.Drawing.Point(14, 26);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(78, 12);
             this.label3.TabIndex = 1;
@@ -451,6 +468,16 @@
             this.tabPage1.Size = new System.Drawing.Size(231, 222);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Threshold";
+            // 
+            // Binarization_Tooltip
+            // 
+            this.Binarization_Tooltip.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.Binarization_Tooltip.Location = new System.Drawing.Point(6, 150);
+            this.Binarization_Tooltip.Name = "Binarization_Tooltip";
+            this.Binarization_Tooltip.ReadOnly = true;
+            this.Binarization_Tooltip.Size = new System.Drawing.Size(216, 66);
+            this.Binarization_Tooltip.TabIndex = 13;
+            this.Binarization_Tooltip.Text = "Binarization threshold, set any value above or below threshold to 0 or 255";
             // 
             // Invert_CheckBox
             // 
@@ -547,16 +574,6 @@
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(239, 248);
             this.tabControl1.TabIndex = 3;
-            // 
-            // Binarization_Tooltip
-            // 
-            this.Binarization_Tooltip.BackColor = System.Drawing.SystemColors.ActiveBorder;
-            this.Binarization_Tooltip.Location = new System.Drawing.Point(6, 150);
-            this.Binarization_Tooltip.Name = "Binarization_Tooltip";
-            this.Binarization_Tooltip.ReadOnly = true;
-            this.Binarization_Tooltip.Size = new System.Drawing.Size(216, 66);
-            this.Binarization_Tooltip.TabIndex = 13;
-            this.Binarization_Tooltip.Text = "Binarization threshold, set any value above or below threshold to 0 or 255";
             // 
             // label5
             // 
@@ -663,6 +680,7 @@
         private System.Windows.Forms.Button DiscardSmallest_Button;
         private System.Windows.Forms.RichTextBox Binarization_Tooltip;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.CheckBox HighlightLS_CheckBox;
     }
 }
 

@@ -28,13 +28,22 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.histogramBox = new Emgu.CV.UI.HistogramBox();
             this.SuspendLayout();
+            // 
+            // histogramBox
+            // 
+            this.histogramBox.Location = new System.Drawing.Point(12, 12);
+            this.histogramBox.Name = "histogramBox";
+            this.histogramBox.Size = new System.Drawing.Size(859, 683);
+            this.histogramBox.TabIndex = 0;
             // 
             // Histogram_Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(883, 707);
+            this.Controls.Add(this.histogramBox);
             this.Name = "Histogram_Form";
             this.Text = "Histogram";
             this.Load += new System.EventHandler(this.Histogram_Form_Load);
@@ -43,5 +52,7 @@
         }
 
         #endregion
+
+        private Emgu.CV.UI.HistogramBox histogramBox;
     }
 }
