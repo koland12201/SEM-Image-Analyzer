@@ -10,11 +10,13 @@ using System.Net.Sockets;
 using System.Net;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
+using Emgu.CV.OCR;
 
 namespace SEM_Analyzer_Alt3
 {
@@ -23,6 +25,7 @@ namespace SEM_Analyzer_Alt3
         protected bool validData;
         string path;
         protected Image image;
+        Emgu.CV.Image<Bgr, Byte> PictureBoxImage;
         Emgu.CV.Image<Bgr, Byte> RawImage;
         Emgu.CV.Image<Bgr, byte> BitmapROI;
         Emgu.CV.Image<Gray, byte> BinaryROI;
@@ -33,7 +36,11 @@ namespace SEM_Analyzer_Alt3
         int ObjectAmount = 0;
         double StdDev = 0;
         double[] FilteredArea;
+        RotatedRect[] BoundingBoxes = new RotatedRect[1];
         string MeasUnit = "px";
+        double RulerLength = 0;
+        List<Point> RulerPoints = new List<Point>();
+        VectorOfVectorOfPoint Contours = new VectorOfVectorOfPoint();
 
         //settings
         int RedThreshold, GreenThreshold, BlueThreshold;
@@ -78,6 +85,8 @@ namespace SEM_Analyzer_Alt3
             if (validData)
             {
                 path = filename;
+                // import raw image from file directory
+                RawImage = new Image<Bgr, Byte>(path);
                 getImageThread = new Thread(new ThreadStart(LoadImage));
                 getImageThread.Start();
                 e.Effect = DragDropEffects.Copy;
@@ -126,11 +135,9 @@ namespace SEM_Analyzer_Alt3
             
             try
             {
-                // import raw image from file directory
-                RawImage = new Image<Bgr, Byte>(path);
-
                 // create a copy and crop image
-                BitmapROI = RawImage.Clone();
+                PictureBoxImage = RawImage.Clone();
+                BitmapROI = RawImage.Clone();             
                 BitmapROI.ROI = ROIRect;
             }
             catch
@@ -145,7 +152,7 @@ namespace SEM_Analyzer_Alt3
                 Point ROIOffset = new Point();
                 ROIOffset.X = ROIRect.X;
                 ROIOffset.Y = ROIRect.Y;
-
+                
                 if (EnabledAnalysis)
                 {
                     if (Invert_CheckBox.Checked)
@@ -155,17 +162,14 @@ namespace SEM_Analyzer_Alt3
                     // binarization
                     if (Grayscale_CheckBox.Checked)
                     {
-                        BitmapROI = BitmapROI.ThresholdBinary(new Bgr(RedThreshold, RedThreshold, RedThreshold), new Bgr(255, 255, 255));
+                        BinaryROI = BitmapROI.ThresholdBinary(new Bgr(RedThreshold, RedThreshold, RedThreshold), new Bgr(255, 255, 255)).Convert<Gray, Byte>();
                     }
                     else
                     {
-                        BitmapROI = BitmapROI.ThresholdBinary(new Bgr(BlueThreshold, GreenThreshold, RedThreshold), new Bgr(255, 255, 255));
+                        BinaryROI = BitmapROI.ThresholdBinary(new Bgr(BlueThreshold, GreenThreshold, RedThreshold), new Bgr(255, 255, 255)).Convert<Gray, Byte>();
                     }
 
                     // find contour
-                    BinaryROI = BitmapROI.Convert<Gray, Byte>();
-
-                    VectorOfVectorOfPoint Contours = new VectorOfVectorOfPoint();
                     CvInvoke.FindContours(BinaryROI, Contours, null, RetrType.List, ChainApproxMethod.ChainApproxNone);
 
                     // eval contour area 
@@ -174,13 +178,20 @@ namespace SEM_Analyzer_Alt3
                     int LargestInd = 0;
                     double SmallestArea = 2147483647;
                     int SmallestInd = 0;
-                    Array.Resize(ref FilteredArea, Contours.Size);
+                    Array.Resize(ref FilteredArea, Contours.Size); //not a good practice but it works
+                    if(AutoLength_Button.Checked)
+                    {
+                        Array.Resize(ref BoundingBoxes, Contours.Size);
+                    }
+
                     for (int i = 0; i < Contours.Size; i++)
                     {
                         double Area = CvInvoke.ContourArea(Contours[i], false);
+                        
+
                         if (Area > MinArea && Area < MaxArea)
                         {
-                            CvInvoke.DrawContours(RawImage, Contours, i, new MCvScalar(0, 255, 0, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
+                            CvInvoke.DrawContours(PictureBoxImage, Contours, i, new MCvScalar(0, 255, 0, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
 
                             // rebuild area array to exclude filtered values
                             FilteredArea[ObjectAmount] = Area;
@@ -196,13 +207,23 @@ namespace SEM_Analyzer_Alt3
                                 SmallestArea = Area;
                                 SmallestInd = i;
                             }
+
+                            //calculate bounding box for each contour
+                            if (AutoLength_Button.Checked)
+                            {
+                                // locate bounding boxes and record findings (so it can be drawn later
+                                BoundingBoxes[ObjectAmount] = CvInvoke.MinAreaRect(Contours[i]);
+                                
+                            }
+
                         }
                     }
 
+
                     if (HighlightLS_CheckBox.Checked)
                     {
-                        CvInvoke.DrawContours(RawImage, Contours, LargestInd, new MCvScalar(0, 0, 255, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
-                        CvInvoke.DrawContours(RawImage, Contours, SmallestInd, new MCvScalar(255, 0, 0, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
+                        CvInvoke.DrawContours(PictureBoxImage, Contours, LargestInd, new MCvScalar(0, 0, 255, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
+                        CvInvoke.DrawContours(PictureBoxImage, Contours, SmallestInd, new MCvScalar(255, 0, 0, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
                     }
 
 
@@ -210,12 +231,41 @@ namespace SEM_Analyzer_Alt3
                     {
                         // trim array from excessive empty elements
                         Array.Resize(ref FilteredArea, ObjectAmount);
+                        if (AutoLength_Button.Checked)
+                        {
+                            Array.Resize(ref BoundingBoxes, ObjectAmount);
+                        }
 
                         // find avg
                         MeanArea = FilteredArea.Average();
 
                         // find std dev
                         StdDev = Stddev(FilteredArea);
+
+                        // draw found bounding boxes to picturebox
+                        if (AutoLength_Button.Checked)
+                        {
+                            for(int i=0; i < ObjectAmount; i++)
+                            {
+                                //draw bounding boxes
+                                PointF[] BoxPoints = BoundingBoxes[i].GetVertices();
+                                for (int j = 0; j < BoxPoints.Length; j++)
+                                {
+                                    CvInvoke.Line(PictureBoxImage, new Point((int)BoxPoints[j].X + ROIOffset.X, (int)BoxPoints[j].Y + ROIOffset.Y), new Point((int)BoxPoints[(j + 1) % 4].X + ROIOffset.X, (int)BoxPoints[(j + 1) % 4].Y + ROIOffset.Y), new MCvScalar(0, 0, 255, 255), 1);
+                                }
+
+                                /*
+                                // draw dimension labels
+                                // offset to the center
+                                Point BoxCenterL = new Point((int)BoundingBoxes[i].Center.X + ROIOffset.X-20, (int)BoundingBoxes[i].Center.Y + ROIOffset.Y);
+                                CvInvoke.PutText(PictureBoxImage, "L:" + Math.Round(BoundingBoxes[i].Size.Height, 1), BoxCenterL, FontFace.HersheyTriplex, 0.2, new MCvScalar(255, 0, 0, 255), 1);
+                                // offset slightly lower than the above label
+                                Point BoxCenterW = new Point((int)BoundingBoxes[i].Center.X + ROIOffset.X - 20, (int)BoundingBoxes[i].Center.Y + ROIOffset.Y+15);
+                                CvInvoke.PutText(PictureBoxImage, "W:" + Math.Round(BoundingBoxes[i].Size.Width, 1), BoxCenterW, FontFace.HersheyTriplex, 0.2, new MCvScalar(255, 0, 0, 255), 1);
+                                */
+
+                            }
+                        }
                     }
                     else
                     {
@@ -226,9 +276,9 @@ namespace SEM_Analyzer_Alt3
                     }
                     UpdateReport();
                 }
-                if(validData)
+                if (validData)
                 {
-                    Main_panAndZoomPictureBox.Image = RawImage.ToBitmap();
+                    Main_panAndZoomPictureBox.Image = PictureBoxImage.ToBitmap();
                 }
             }
             catch
@@ -255,7 +305,11 @@ namespace SEM_Analyzer_Alt3
                                        "Threshold(B): " + BlueThreshold.ToString() + "\n" +
                                        "Max Area Filter: " + MaxArea.ToString() + "\n" +
                                        "Min Area Filter: " + MinArea.ToString() + "\n"+
-                                       "Inverted: "+ Invert_CheckBox.Checked.ToString()+"\n";
+                                       "Inverted: "+ Invert_CheckBox.Checked.ToString()+"\n" +
+                                       "ROI X: " + ROIRect.X.ToString() + "\n" +
+                                       "ROI Y: " + ROIRect.Y.ToString() + "\n" +
+                                       "ROI Height: " + ROIRect.Height.ToString() + "\n" +
+                                       "ROI Width: " + ROIRect.Width.ToString() + "\n";
         }
         double Stddev(double[] Values)
         {
@@ -277,11 +331,8 @@ namespace SEM_Analyzer_Alt3
 
         private void MinArea_TextBox_TextChanged(object sender, EventArgs e)
         {
-
             MinArea = Convert.ToDouble(MinArea_TextBox.Text);
             LoadImage();
-
-
         }
 
         private void MaxArea_TextBox_TextChanged(object sender, EventArgs e)
@@ -363,18 +414,63 @@ namespace SEM_Analyzer_Alt3
             {
                 SelectROI_Button.CheckState = CheckState.Checked;
                 SelectROI_Button.Checked = true;
+
+                //uncheck other toggle buttons
+                SelectRuler_Button.CheckState = CheckState.Unchecked;
+                SelectRuler_Button.Checked = false;
             }
         }
-        private void SelectROI_PictureBox_MouseDown(object sender, MouseEventArgs e)
+        private void SelectRuler_Button_Click(object sender, EventArgs e)
         {
-            if(SelectROI_Button.Checked)
+            if (SelectRuler_Button.Checked)
             {
-                //find p2 of the ROI bounding box, offsetted by imagebox scrollbox
-                int horz = Main_panAndZoomPictureBox.HorizontalScrollBar.Value;
-                int vert = Main_panAndZoomPictureBox.VerticalScrollBar.Value;
+                SelectRuler_Button.CheckState = CheckState.Unchecked;
+                SelectRuler_Button.Checked = false;
 
-                ROIp1.X = (int)(((double)e.X) / Main_panAndZoomPictureBox.ZoomScale)+horz;
-                ROIp1.Y = (int)(((double)e.Y) / Main_panAndZoomPictureBox.ZoomScale)+vert;
+                //clear lines
+                RulerPoints.Clear();
+                LoadImage();
+            }
+            else
+            {
+                SelectRuler_Button.CheckState = CheckState.Checked;
+                SelectRuler_Button.Checked = true;
+                RulerPoints.Clear();
+
+                //uncheck other toggle buttons
+                SelectROI_Button.CheckState = CheckState.Unchecked;
+                SelectROI_Button.Checked = false;
+            }
+        }
+        private void AutoLength_Button_Click(object sender, EventArgs e)
+        {
+            if (AutoLength_Button.Checked)
+            {
+                AutoLength_Button.CheckState = CheckState.Unchecked;
+                AutoLength_Button.Checked = false;
+                LoadImage();
+            }
+            else
+            {
+                AutoLength_Button.CheckState = CheckState.Checked;
+                AutoLength_Button.Checked = true;
+
+                LoadImage();
+            }
+        }
+
+        private void PictureBox_MouseDown(object sender, MouseEventArgs e)
+        {
+            //find clicked point on the zoom/pannable picbox, offsetted by imagebox scroll and zoom level
+            int horz = Main_panAndZoomPictureBox.HorizontalScrollBar.Value;
+            int vert = Main_panAndZoomPictureBox.VerticalScrollBar.Value;
+            int MouseAtx = (int)(((double)e.X) / Main_panAndZoomPictureBox.ZoomScale) + horz;
+            int MouseAty = (int)(((double)e.Y) / Main_panAndZoomPictureBox.ZoomScale) + vert;
+            Point MouseAtPoint = new Point(MouseAtx, MouseAty);
+
+            if (SelectROI_Button.Checked)
+            {
+                ROIp1 = MouseAtPoint;
                 SelectingROI = true;
 
                 // record imagebox built in zoom/pan so that it can be undo when the mouse is released (can't disable pan/zoom)
@@ -382,8 +478,20 @@ namespace SEM_Analyzer_Alt3
                 UndoHorzScroll = horz;
                 UndoVertScroll = vert;
             }
+            if (SelectRuler_Button.Checked)
+            {
+                RulerPoints.Add(MouseAtPoint);
+                Main_panAndZoomPictureBox.Invalidate();
+                RulerLength=LengthInPx(RulerPoints);
+                Length_Label.Text = "Length = "+ Math.Round(RulerLength,2).ToString() +" " + MeasUnit;
+
+                // record imagebox built in zoom/pan so that it can be undo when the mouse is released (can't disable pan/zoom)
+                UndoZoomLevel = Main_panAndZoomPictureBox.ZoomScale;
+                UndoHorzScroll = horz;
+                UndoVertScroll = vert;
+            }
         }
-        private void SelectROI_PictureBox_MouseUp(object sender, MouseEventArgs e)
+        private void PictureBox_MouseUp(object sender, MouseEventArgs e)
         {
             if (SelectROI_Button.Checked)
             {
@@ -400,7 +508,7 @@ namespace SEM_Analyzer_Alt3
                 SelectROI_Button.Checked = false;
             }
         }
-        private void SelectROI_PictureBox_MouseMove(object sender, MouseEventArgs e)
+        private void PictureBox_MouseMove(object sender, MouseEventArgs e)
         {
             if (SelectROI_Button.Checked&&SelectingROI)
             {
@@ -410,34 +518,43 @@ namespace SEM_Analyzer_Alt3
                 Point ROIp2 = new Point(0,0);
                 ROIp2.X = (int)(((double)e.X) / Main_panAndZoomPictureBox.ZoomScale) + horz;
                 ROIp2.Y = (int)(((double)e.Y) / Main_panAndZoomPictureBox.ZoomScale) + vert;
-                
-
+   
                 ROIRect = Main_panAndZoomPictureBox.GetRectangle(ROIp1, ROIp2);
                 Refresh();
                 LoadImage();
             }
         }
-        private void SelectROI_PictureBox_Draw(object sender, PaintEventArgs e)
+        private void PictureBox_Draw(object sender, PaintEventArgs e)
         {
             // draw yellow box
             Pen pen = new Pen(Color.Yellow,1);
             e.Graphics.DrawRectangle(pen, ROIRect);
+
+            if(SelectRuler_Button.Checked)
+            {
+                if (RulerPoints.Count > 1) e.Graphics.DrawLines(Pens.Red, RulerPoints.ToArray());
+            }
+
+            if (AutoLength_Button.Checked)
+            {
+                for (int i = 0; i < ObjectAmount; i++)
+                {
+
+                    Font drawFont = new Font("Arial", 3);
+                    SolidBrush drawBrush = new SolidBrush(Color.Blue);
+                    PointF drawPoint = new PointF(BoundingBoxes[i].Center.X+ROIRect.X- BoundingBoxes[i].Size.Width/2, BoundingBoxes[i].Center.Y+ ROIRect.Y-3);
+                    e.Graphics.DrawString("L:" + Math.Round(BoundingBoxes[i].Size.Height, 1)+",W:"+ Math.Round(BoundingBoxes[i].Size.Width, 1), drawFont, drawBrush, drawPoint);
+                }
+            }
         }
 
-        private void SelectRuler_Button_Click(object sender, EventArgs e)
-        {
 
-        }
 
         private void Invert_CheckBox_CheckedChanged(object sender, EventArgs e)
         {
-                LoadImage();
+            LoadImage();
         }
 
-        private void toolStripTextBox1_Click(object sender, EventArgs e)
-        {
-
-        }
 
         private void Help_Button_Click(object sender, EventArgs e)
         {
@@ -467,10 +584,9 @@ namespace SEM_Analyzer_Alt3
         {
             // show only contour
             Emgu.CV.Image<Bgr, byte> temp = new Image<Bgr, byte>(BinaryROI.Width, BinaryROI.Height);
-            temp = ~temp;
+            temp = ~temp; //invert black to white background
 
             // find contour
-            BinaryROI = BitmapROI.Convert<Gray, Byte>();
             VectorOfVectorOfPoint Contours = new VectorOfVectorOfPoint();
             CvInvoke.FindContours(BinaryROI, Contours, null, RetrType.List, ChainApproxMethod.ChainApproxNone);
 
@@ -566,6 +682,13 @@ namespace SEM_Analyzer_Alt3
             LoadImage();
         }
 
+        private void ExportArea_Button_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
+
         private void BlueThreshold_TrackBar_Scroll(object sender, EventArgs e)
         {
             BlueThreshold = BlueThreshold_TrackBar.Value;
@@ -614,6 +737,18 @@ namespace SEM_Analyzer_Alt3
             }
 
             return new Tuple<double[], double[]>(x, y);
+        }
+        double LengthInPx(List<Point> points)
+        {
+            if (!(points.Count > 1)) return 0;
+
+            double len = 0;
+            for (int i = 1; i < points.Count; i++)
+            {
+                len += Math.Sqrt((points[i - 1].X - points[i].X) * (points[i - 1].X - points[i].X)
+                            + (points[i - 1].Y - points[i].Y) * (points[i - 1].Y - points[i].Y));
+            }
+            return len;
         }
     }
 }

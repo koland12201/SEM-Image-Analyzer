@@ -46,7 +46,7 @@
             this.Main_panAndZoomPictureBox = new Emgu.CV.UI.PanAndZoomPictureBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.filesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.exportAsCSVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExportContour_Button = new System.Windows.Forms.ToolStripMenuItem();
             this.plotDataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.areaDistrubutionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorHistogramToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -79,6 +79,10 @@
             this.RedThreshold_TrackBar = new System.Windows.Forms.TrackBar();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.label5 = new System.Windows.Forms.Label();
+            this.Length_Label = new System.Windows.Forms.ToolStripLabel();
+            this.ExportArea_Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.AutoLength_Button = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)(this.DragIcon_PictureBox)).BeginInit();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Main_panAndZoomPictureBox)).BeginInit();
@@ -177,12 +181,15 @@
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.Enabled_Button,
+            this.UnZoom_button,
             this.toolStripSeparator2,
             this.SelectROI_Button,
+            this.toolStripButton1,
             this.SelectOCR_Button,
             this.toolStripSeparator1,
-            this.UnZoom_button,
+            this.AutoLength_Button,
             this.SelectRuler_Button,
+            this.Length_Label,
             this.toolStripSeparator3});
             this.toolStrip1.Location = new System.Drawing.Point(0, 24);
             this.toolStrip1.Name = "toolStrip1";
@@ -226,10 +233,10 @@
             this.Main_panAndZoomPictureBox.Size = new System.Drawing.Size(1083, 752);
             this.Main_panAndZoomPictureBox.TabIndex = 10;
             this.Main_panAndZoomPictureBox.TabStop = false;
-            this.Main_panAndZoomPictureBox.Paint += new System.Windows.Forms.PaintEventHandler(this.SelectROI_PictureBox_Draw);
-            this.Main_panAndZoomPictureBox.MouseDown += new System.Windows.Forms.MouseEventHandler(this.SelectROI_PictureBox_MouseDown);
-            this.Main_panAndZoomPictureBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.SelectROI_PictureBox_MouseMove);
-            this.Main_panAndZoomPictureBox.MouseUp += new System.Windows.Forms.MouseEventHandler(this.SelectROI_PictureBox_MouseUp);
+            this.Main_panAndZoomPictureBox.Paint += new System.Windows.Forms.PaintEventHandler(this.PictureBox_Draw);
+            this.Main_panAndZoomPictureBox.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PictureBox_MouseDown);
+            this.Main_panAndZoomPictureBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PictureBox_MouseMove);
+            this.Main_panAndZoomPictureBox.MouseUp += new System.Windows.Forms.MouseEventHandler(this.PictureBox_MouseUp);
             // 
             // menuStrip1
             // 
@@ -247,16 +254,17 @@
             // filesToolStripMenuItem
             // 
             this.filesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.exportAsCSVToolStripMenuItem});
+            this.ExportContour_Button,
+            this.ExportArea_Button});
             this.filesToolStripMenuItem.Name = "filesToolStripMenuItem";
             this.filesToolStripMenuItem.Size = new System.Drawing.Size(53, 20);
             this.filesToolStripMenuItem.Text = "Export";
             // 
-            // exportAsCSVToolStripMenuItem
+            // ExportContour_Button
             // 
-            this.exportAsCSVToolStripMenuItem.Name = "exportAsCSVToolStripMenuItem";
-            this.exportAsCSVToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
-            this.exportAsCSVToolStripMenuItem.Text = "Export As CSV";
+            this.ExportContour_Button.Name = "ExportContour_Button";
+            this.ExportContour_Button.Size = new System.Drawing.Size(180, 22);
+            this.ExportContour_Button.Text = "Export Contour";
             // 
             // plotDataToolStripMenuItem
             // 
@@ -278,7 +286,7 @@
             // colorHistogramToolStripMenuItem
             // 
             this.colorHistogramToolStripMenuItem.Name = "colorHistogramToolStripMenuItem";
-            this.colorHistogramToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.colorHistogramToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
             this.colorHistogramToolStripMenuItem.Text = "Color Histogram";
             this.colorHistogramToolStripMenuItem.Click += new System.EventHandler(this.colorHistogramToolStripMenuItem_Click);
             // 
@@ -584,6 +592,38 @@
             this.label5.TabIndex = 13;
             this.label5.Text = "label5";
             // 
+            // Length_Label
+            // 
+            this.Length_Label.Name = "Length_Label";
+            this.Length_Label.Size = new System.Drawing.Size(64, 22);
+            this.Length_Label.Text = "Length = 0";
+            // 
+            // ExportArea_Button
+            // 
+            this.ExportArea_Button.Name = "ExportArea_Button";
+            this.ExportArea_Button.Size = new System.Drawing.Size(180, 22);
+            this.ExportArea_Button.Text = "Export Area";
+            this.ExportArea_Button.Click += new System.EventHandler(this.ExportArea_Button_Click);
+            // 
+            // AutoLength_Button
+            // 
+            this.AutoLength_Button.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.AutoLength_Button.Image = ((System.Drawing.Image)(resources.GetObject("AutoLength_Button.Image")));
+            this.AutoLength_Button.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.AutoLength_Button.Name = "AutoLength_Button";
+            this.AutoLength_Button.Size = new System.Drawing.Size(23, 22);
+            this.AutoLength_Button.Text = "Automatically measure Length/Width bounding of all detectable objects in ROI";
+            this.AutoLength_Button.Click += new System.EventHandler(this.AutoLength_Button_Click);
+            // 
+            // toolStripButton1
+            // 
+            this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
+            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton1.Name = "toolStripButton1";
+            this.toolStripButton1.Size = new System.Drawing.Size(23, 22);
+            this.toolStripButton1.Text = "toolStripButton1";
+            // 
             // Form1
             // 
             this.AllowDrop = true;
@@ -654,7 +694,7 @@
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem binarizationToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem contourToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem exportAsCSVToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ExportContour_Button;
         private System.Windows.Forms.ToolStripMenuItem colorHistogramToolStripMenuItem;
         private System.Windows.Forms.ToolStripButton UnZoom_button;
         private System.Windows.Forms.TabPage tabPage3;
@@ -681,6 +721,10 @@
         private System.Windows.Forms.RichTextBox Binarization_Tooltip;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.CheckBox HighlightLS_CheckBox;
+        private System.Windows.Forms.ToolStripLabel Length_Label;
+        private System.Windows.Forms.ToolStripMenuItem ExportArea_Button;
+        private System.Windows.Forms.ToolStripButton AutoLength_Button;
+        private System.Windows.Forms.ToolStripButton toolStripButton1;
     }
 }
 
