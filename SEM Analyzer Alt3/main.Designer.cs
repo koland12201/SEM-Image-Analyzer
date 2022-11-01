@@ -40,13 +40,17 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.Enabled_Button = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.UnZoom_button = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.SetScalingBar_Button = new System.Windows.Forms.ToolStripButton();
+            this.AutoLength_Button = new System.Windows.Forms.ToolStripButton();
+            this.Length_Label = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.Main_panAndZoomPictureBox = new Emgu.CV.UI.PanAndZoomPictureBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.filesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ExportContour_Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExportArea_Button = new System.Windows.Forms.ToolStripMenuItem();
             this.plotDataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.areaDistrubutionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorHistogramToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -79,10 +83,6 @@
             this.RedThreshold_TrackBar = new System.Windows.Forms.TrackBar();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.label5 = new System.Windows.Forms.Label();
-            this.Length_Label = new System.Windows.Forms.ToolStripLabel();
-            this.ExportArea_Button = new System.Windows.Forms.ToolStripMenuItem();
-            this.AutoLength_Button = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)(this.DragIcon_PictureBox)).BeginInit();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Main_panAndZoomPictureBox)).BeginInit();
@@ -151,6 +151,7 @@
             this.SelectROI_Button.Name = "SelectROI_Button";
             this.SelectROI_Button.Size = new System.Drawing.Size(23, 22);
             this.SelectROI_Button.Text = "Set ROI";
+            this.SelectROI_Button.ToolTipText = "Set ROI Region";
             this.SelectROI_Button.Click += new System.EventHandler(this.SelectROI_Button_Click);
             // 
             // SelectRuler_Button
@@ -170,7 +171,7 @@
             this.SelectOCR_Button.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.SelectOCR_Button.Name = "SelectOCR_Button";
             this.SelectOCR_Button.Size = new System.Drawing.Size(23, 22);
-            this.SelectOCR_Button.Text = "toolStripButton3";
+            this.SelectOCR_Button.Text = "Set Unit Region";
             // 
             // toolStripSeparator1
             // 
@@ -184,7 +185,7 @@
             this.UnZoom_button,
             this.toolStripSeparator2,
             this.SelectROI_Button,
-            this.toolStripButton1,
+            this.SetScalingBar_Button,
             this.SelectOCR_Button,
             this.toolStripSeparator1,
             this.AutoLength_Button,
@@ -202,14 +203,10 @@
             this.Enabled_Button.Image = ((System.Drawing.Image)(resources.GetObject("Enabled_Button.Image")));
             this.Enabled_Button.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.Enabled_Button.Name = "Enabled_Button";
-            this.Enabled_Button.Size = new System.Drawing.Size(69, 22);
-            this.Enabled_Button.Text = "Enabled";
+            this.Enabled_Button.Size = new System.Drawing.Size(62, 22);
+            this.Enabled_Button.Text = "Enable";
+            this.Enabled_Button.ToolTipText = "Enable Analysis";
             this.Enabled_Button.Click += new System.EventHandler(this.Enabled_Button_Click);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
             // 
             // UnZoom_button
             // 
@@ -220,6 +217,38 @@
             this.UnZoom_button.Size = new System.Drawing.Size(23, 22);
             this.UnZoom_button.Text = "Reset Zoom";
             this.UnZoom_button.Click += new System.EventHandler(this.UndoZoom_Button_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            // 
+            // SetScalingBar_Button
+            // 
+            this.SetScalingBar_Button.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.SetScalingBar_Button.Image = ((System.Drawing.Image)(resources.GetObject("SetScalingBar_Button.Image")));
+            this.SetScalingBar_Button.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.SetScalingBar_Button.Name = "SetScalingBar_Button";
+            this.SetScalingBar_Button.Size = new System.Drawing.Size(23, 22);
+            this.SetScalingBar_Button.Text = "Set Scalebar Region";
+            this.SetScalingBar_Button.Click += new System.EventHandler(this.SetScalingBar_Button_Click);
+            // 
+            // AutoLength_Button
+            // 
+            this.AutoLength_Button.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.AutoLength_Button.Image = ((System.Drawing.Image)(resources.GetObject("AutoLength_Button.Image")));
+            this.AutoLength_Button.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.AutoLength_Button.Name = "AutoLength_Button";
+            this.AutoLength_Button.Size = new System.Drawing.Size(23, 22);
+            this.AutoLength_Button.Text = "Automatically measure Length/Width bounding of all detectable objects in ROI";
+            this.AutoLength_Button.Click += new System.EventHandler(this.AutoLength_Button_Click);
+            // 
+            // Length_Label
+            // 
+            this.Length_Label.Name = "Length_Label";
+            this.Length_Label.Size = new System.Drawing.Size(64, 22);
+            this.Length_Label.Text = "Length = 0";
+            this.Length_Label.ToolTipText = "length of the current ruler measurement";
             // 
             // toolStripSeparator3
             // 
@@ -263,8 +292,15 @@
             // ExportContour_Button
             // 
             this.ExportContour_Button.Name = "ExportContour_Button";
-            this.ExportContour_Button.Size = new System.Drawing.Size(180, 22);
+            this.ExportContour_Button.Size = new System.Drawing.Size(155, 22);
             this.ExportContour_Button.Text = "Export Contour";
+            // 
+            // ExportArea_Button
+            // 
+            this.ExportArea_Button.Name = "ExportArea_Button";
+            this.ExportArea_Button.Size = new System.Drawing.Size(155, 22);
+            this.ExportArea_Button.Text = "Export Area";
+            this.ExportArea_Button.Click += new System.EventHandler(this.ExportArea_Button_Click);
             // 
             // plotDataToolStripMenuItem
             // 
@@ -592,38 +628,6 @@
             this.label5.TabIndex = 13;
             this.label5.Text = "label5";
             // 
-            // Length_Label
-            // 
-            this.Length_Label.Name = "Length_Label";
-            this.Length_Label.Size = new System.Drawing.Size(64, 22);
-            this.Length_Label.Text = "Length = 0";
-            // 
-            // ExportArea_Button
-            // 
-            this.ExportArea_Button.Name = "ExportArea_Button";
-            this.ExportArea_Button.Size = new System.Drawing.Size(180, 22);
-            this.ExportArea_Button.Text = "Export Area";
-            this.ExportArea_Button.Click += new System.EventHandler(this.ExportArea_Button_Click);
-            // 
-            // AutoLength_Button
-            // 
-            this.AutoLength_Button.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.AutoLength_Button.Image = ((System.Drawing.Image)(resources.GetObject("AutoLength_Button.Image")));
-            this.AutoLength_Button.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.AutoLength_Button.Name = "AutoLength_Button";
-            this.AutoLength_Button.Size = new System.Drawing.Size(23, 22);
-            this.AutoLength_Button.Text = "Automatically measure Length/Width bounding of all detectable objects in ROI";
-            this.AutoLength_Button.Click += new System.EventHandler(this.AutoLength_Button_Click);
-            // 
-            // toolStripButton1
-            // 
-            this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
-            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(23, 22);
-            this.toolStripButton1.Text = "toolStripButton1";
-            // 
             // Form1
             // 
             this.AllowDrop = true;
@@ -724,7 +728,7 @@
         private System.Windows.Forms.ToolStripLabel Length_Label;
         private System.Windows.Forms.ToolStripMenuItem ExportArea_Button;
         private System.Windows.Forms.ToolStripButton AutoLength_Button;
-        private System.Windows.Forms.ToolStripButton toolStripButton1;
+        private System.Windows.Forms.ToolStripButton SetScalingBar_Button;
     }
 }
 

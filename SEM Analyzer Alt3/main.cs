@@ -42,14 +42,20 @@ namespace SEM_Analyzer_Alt3
         List<Point> RulerPoints = new List<Point>();
         VectorOfVectorOfPoint Contours = new VectorOfVectorOfPoint();
 
+        //image properties
+        int ScaleBarPx = 0; 
+        
+
         //settings
         int RedThreshold, GreenThreshold, BlueThreshold;
         double MinArea, MaxArea;
         bool EnabledAnalysis = false;
         int LineThickness = 1;
         Rectangle ROIRect = new Rectangle();
+        Rectangle ScaleBarRect = new Rectangle();
         Point ROIp1;
         bool SelectingROI = false;
+        bool SelectingScalingBar = false;
         double UndoZoomLevel = 1;
         int UndoHorzScroll = 0;
         int UndoVertScroll = 0;
@@ -131,8 +137,7 @@ namespace SEM_Analyzer_Alt3
             }
         }
         protected void LoadImage()
-        {
-            
+        {     
             try
             {
                 // create a copy and crop image
@@ -187,7 +192,6 @@ namespace SEM_Analyzer_Alt3
                     for (int i = 0; i < Contours.Size; i++)
                     {
                         double Area = CvInvoke.ContourArea(Contours[i], false);
-                        
 
                         if (Area > MinArea && Area < MaxArea)
                         {
@@ -253,17 +257,6 @@ namespace SEM_Analyzer_Alt3
                                 {
                                     CvInvoke.Line(PictureBoxImage, new Point((int)BoxPoints[j].X + ROIOffset.X, (int)BoxPoints[j].Y + ROIOffset.Y), new Point((int)BoxPoints[(j + 1) % 4].X + ROIOffset.X, (int)BoxPoints[(j + 1) % 4].Y + ROIOffset.Y), new MCvScalar(0, 0, 255, 255), 1);
                                 }
-
-                                /*
-                                // draw dimension labels
-                                // offset to the center
-                                Point BoxCenterL = new Point((int)BoundingBoxes[i].Center.X + ROIOffset.X-20, (int)BoundingBoxes[i].Center.Y + ROIOffset.Y);
-                                CvInvoke.PutText(PictureBoxImage, "L:" + Math.Round(BoundingBoxes[i].Size.Height, 1), BoxCenterL, FontFace.HersheyTriplex, 0.2, new MCvScalar(255, 0, 0, 255), 1);
-                                // offset slightly lower than the above label
-                                Point BoxCenterW = new Point((int)BoundingBoxes[i].Center.X + ROIOffset.X - 20, (int)BoundingBoxes[i].Center.Y + ROIOffset.Y+15);
-                                CvInvoke.PutText(PictureBoxImage, "W:" + Math.Round(BoundingBoxes[i].Size.Width, 1), BoxCenterW, FontFace.HersheyTriplex, 0.2, new MCvScalar(255, 0, 0, 255), 1);
-                                */
-
                             }
                         }
                     }
@@ -291,25 +284,33 @@ namespace SEM_Analyzer_Alt3
         {
             // print report
             Report_RichTextBox.Text = "----------------------------------" +
-                                       "\nReport:\n" +
+                                       "\nReport (summary):\n" +
                                        "Objects= " + ObjectAmount.ToString() + "\n" +
                                        "Smallest = " + FilteredArea.Min().ToString() + "\n" +
                                        "Largest Area= " + FilteredArea.Max().ToString() + "\n" +
                                        "Mean Area= " + MeanArea.ToString() + "\n" +
                                        "Area std dev= " + StdDev.ToString() + "\n" +
                                        "Unit = " + MeasUnit + "\n" +
+                                       "----------------------------------\n" +
+                                       "Data Extraction:\n" +
+                                       "ROI X: " + ROIRect.X.ToString() + "\n" +
+                                       "ROI Y: " + ROIRect.Y.ToString() + "\n" +
+                                       "ROI Height: " + ROIRect.Height.ToString() + "\n" +
+                                       "ROI Width: " + ROIRect.Width.ToString() + "\n"+
+                                       "Scale Bar reigon X: " + ScaleBarRect.X.ToString() + "\n" +
+                                       "Scale Bar reigon Y: " + ScaleBarRect.Y.ToString() + "\n" +
+                                       "Scale Bar reigon Width: " + ScaleBarRect.Width.ToString() + "\n" +
+                                       "Scale Bar reigon Height: " + ScaleBarRect.Height.ToString() + "\n" +
+                                       "Scale Bar Length in Px: " + ScaleBarPx.ToString() + "\n" +
                                        "----------------------------------" +
                                        "\nConfiguration:\n" +
                                        "Threshold(R/Grey): " + RedThreshold.ToString() + "\n" +
                                        "Threshold(G): " + GreenThreshold.ToString() + "\n" +
                                        "Threshold(B): " + BlueThreshold.ToString() + "\n" +
                                        "Max Area Filter: " + MaxArea.ToString() + "\n" +
-                                       "Min Area Filter: " + MinArea.ToString() + "\n"+
-                                       "Inverted: "+ Invert_CheckBox.Checked.ToString()+"\n" +
-                                       "ROI X: " + ROIRect.X.ToString() + "\n" +
-                                       "ROI Y: " + ROIRect.Y.ToString() + "\n" +
-                                       "ROI Height: " + ROIRect.Height.ToString() + "\n" +
-                                       "ROI Width: " + ROIRect.Width.ToString() + "\n";
+                                       "Min Area Filter: " + MinArea.ToString() + "\n" +
+                                       "Inverted: " + Invert_CheckBox.Checked.ToString() + "\n";
+
         }
         double Stddev(double[] Values)
         {
@@ -418,6 +419,27 @@ namespace SEM_Analyzer_Alt3
                 //uncheck other toggle buttons
                 SelectRuler_Button.CheckState = CheckState.Unchecked;
                 SelectRuler_Button.Checked = false;
+                SetScalingBar_Button.CheckState = CheckState.Unchecked;
+                SetScalingBar_Button.Checked = false;
+            }
+        }
+        private void SetScalingBar_Button_Click(object sender, EventArgs e)
+        {
+            if (SetScalingBar_Button.Checked)
+            {
+                SetScalingBar_Button.CheckState = CheckState.Unchecked;
+                SetScalingBar_Button.Checked = false;
+            }
+            else
+            {
+                SetScalingBar_Button.CheckState = CheckState.Checked;
+                SetScalingBar_Button.Checked = true;
+
+                //uncheck other toggle buttons
+                SelectRuler_Button.CheckState = CheckState.Unchecked;
+                SelectRuler_Button.Checked = false;
+                SelectROI_Button.CheckState = CheckState.Unchecked;
+                SelectROI_Button.Checked = false;
             }
         }
         private void SelectRuler_Button_Click(object sender, EventArgs e)
@@ -440,6 +462,8 @@ namespace SEM_Analyzer_Alt3
                 //uncheck other toggle buttons
                 SelectROI_Button.CheckState = CheckState.Unchecked;
                 SelectROI_Button.Checked = false;
+                SetScalingBar_Button.CheckState = CheckState.Unchecked;
+                SetScalingBar_Button.Checked = false;
             }
         }
         private void AutoLength_Button_Click(object sender, EventArgs e)
@@ -478,6 +502,18 @@ namespace SEM_Analyzer_Alt3
                 UndoHorzScroll = horz;
                 UndoVertScroll = vert;
             }
+
+            if (SetScalingBar_Button.Checked)
+            {
+                ROIp1 = MouseAtPoint;
+                SelectingScalingBar = true;
+
+                // record imagebox built in zoom/pan so that it can be undo when the mouse is released (can't disable pan/zoom)
+                UndoZoomLevel = Main_panAndZoomPictureBox.ZoomScale;
+                UndoHorzScroll = horz;
+                UndoVertScroll = vert;
+            }
+
             if (SelectRuler_Button.Checked)
             {
                 RulerPoints.Add(MouseAtPoint);
@@ -490,6 +526,7 @@ namespace SEM_Analyzer_Alt3
                 UndoHorzScroll = horz;
                 UndoVertScroll = vert;
             }
+
         }
         private void PictureBox_MouseUp(object sender, MouseEventArgs e)
         {
@@ -507,6 +544,46 @@ namespace SEM_Analyzer_Alt3
                 SelectROI_Button.CheckState = CheckState.Unchecked;
                 SelectROI_Button.Checked = false;
             }
+            if (SetScalingBar_Button.Checked)
+            {
+                SelectingScalingBar = false;
+
+                // undo autozoom and pan
+                Point point = new Point(UndoHorzScroll, UndoVertScroll);
+                Main_panAndZoomPictureBox.SetZoomScale(UndoZoomLevel, point);
+                Main_panAndZoomPictureBox.HorizontalScrollBar.Value = UndoHorzScroll;
+                Main_panAndZoomPictureBox.VerticalScrollBar.Value = UndoVertScroll;
+
+                // unpop button
+                SetScalingBar_Button.CheckState = CheckState.Unchecked;
+                SetScalingBar_Button.Checked = false;
+
+                // find px length, might fail due to user boxing weird things
+
+                    Image<Bgr, byte> ScalebarImage = RawImage.Clone();
+                    ScalebarImage.ROI = ScaleBarRect;
+                    Image<Gray, byte> tempGrey = ScalebarImage.ThresholdBinary(new Bgr(125, 125, 125), new Bgr(255, 255, 255)).Convert<Gray, Byte>();
+                    int FirstPx = 0;
+                    int LastPx = 0;
+
+                    for (int ix = 0; ix < tempGrey.Size.Width; ix++)
+                    {
+                        if (tempGrey.Data[tempGrey.Size.Height / 2, ix, 0] <= 255 / 2)
+                        {
+                            if (FirstPx == 1)
+                            {
+                                FirstPx = ix;
+                            }
+                            else
+                            {
+                                LastPx = ix;
+                            }
+
+                        }
+                    }
+                    ScaleBarPx = LastPx - FirstPx;
+  
+            }
         }
         private void PictureBox_MouseMove(object sender, MouseEventArgs e)
         {
@@ -523,32 +600,50 @@ namespace SEM_Analyzer_Alt3
                 Refresh();
                 LoadImage();
             }
+            if (SetScalingBar_Button.Checked&&SelectingScalingBar)
+            {
+                int horz = Main_panAndZoomPictureBox.HorizontalScrollBar.Value;
+                int vert = Main_panAndZoomPictureBox.VerticalScrollBar.Value;
+
+                Point ROIp2 = new Point(0, 0);
+                ROIp2.X = (int)(((double)e.X) / Main_panAndZoomPictureBox.ZoomScale) + horz;
+                ROIp2.Y = (int)(((double)e.Y) / Main_panAndZoomPictureBox.ZoomScale) + vert;
+
+                ScaleBarRect = Main_panAndZoomPictureBox.GetRectangle(ROIp1, ROIp2);
+                Refresh();
+                LoadImage();
+            }
         }
         private void PictureBox_Draw(object sender, PaintEventArgs e)
         {
-            // draw yellow box
+            // draw yellow box for ROI
             Pen pen = new Pen(Color.Yellow,1);
             e.Graphics.DrawRectangle(pen, ROIRect);
 
-            if(SelectRuler_Button.Checked)
+            // draw purple box for length
+            Pen pen2 = new Pen(Color.BlueViolet, 1);
+            e.Graphics.DrawRectangle(pen2, ScaleBarRect);
+
+            if (SelectRuler_Button.Checked)
             {
                 if (RulerPoints.Count > 1) e.Graphics.DrawLines(Pens.Red, RulerPoints.ToArray());
             }
+
+
+            
 
             if (AutoLength_Button.Checked)
             {
                 for (int i = 0; i < ObjectAmount; i++)
                 {
-
                     Font drawFont = new Font("Arial", 3);
                     SolidBrush drawBrush = new SolidBrush(Color.Blue);
                     PointF drawPoint = new PointF(BoundingBoxes[i].Center.X+ROIRect.X- BoundingBoxes[i].Size.Width/2, BoundingBoxes[i].Center.Y+ ROIRect.Y-3);
                     e.Graphics.DrawString("L:" + Math.Round(BoundingBoxes[i].Size.Height, 1)+",W:"+ Math.Round(BoundingBoxes[i].Size.Width, 1), drawFont, drawBrush, drawPoint);
                 }
             }
+
         }
-
-
 
         private void Invert_CheckBox_CheckedChanged(object sender, EventArgs e)
         {
