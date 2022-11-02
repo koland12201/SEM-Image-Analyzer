@@ -43,6 +43,7 @@
             this.UnZoom_button = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.SetScalingBar_Button = new System.Windows.Forms.ToolStripButton();
+            this.ScaledUnit_TextBox = new System.Windows.Forms.ToolStripTextBox();
             this.AutoLength_Button = new System.Windows.Forms.ToolStripButton();
             this.Length_Label = new System.Windows.Forms.ToolStripLabel();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
@@ -82,7 +83,6 @@
             this.GreenThreshold_TrackBar = new System.Windows.Forms.TrackBar();
             this.RedThreshold_TrackBar = new System.Windows.Forms.TrackBar();
             this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.DragIcon_PictureBox)).BeginInit();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Main_panAndZoomPictureBox)).BeginInit();
@@ -172,6 +172,7 @@
             this.SelectOCR_Button.Name = "SelectOCR_Button";
             this.SelectOCR_Button.Size = new System.Drawing.Size(23, 22);
             this.SelectOCR_Button.Text = "Set Unit Region";
+            this.SelectOCR_Button.Click += new System.EventHandler(this.SelectOCR_Button_Click);
             // 
             // toolStripSeparator1
             // 
@@ -187,6 +188,7 @@
             this.SelectROI_Button,
             this.SetScalingBar_Button,
             this.SelectOCR_Button,
+            this.ScaledUnit_TextBox,
             this.toolStripSeparator1,
             this.AutoLength_Button,
             this.SelectRuler_Button,
@@ -232,6 +234,14 @@
             this.SetScalingBar_Button.Size = new System.Drawing.Size(23, 22);
             this.SetScalingBar_Button.Text = "Set Scalebar Region";
             this.SetScalingBar_Button.Click += new System.EventHandler(this.SetScalingBar_Button_Click);
+            // 
+            // ScaledUnit_TextBox
+            // 
+            this.ScaledUnit_TextBox.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.ScaledUnit_TextBox.Name = "ScaledUnit_TextBox";
+            this.ScaledUnit_TextBox.Size = new System.Drawing.Size(50, 25);
+            this.ScaledUnit_TextBox.Text = "100 px";
+            this.ScaledUnit_TextBox.TextChanged += new System.EventHandler(this.ScaledUnit_TextBox_Changed);
             // 
             // AutoLength_Button
             // 
@@ -422,7 +432,7 @@
             this.MaxArea_TextBox.Name = "MaxArea_TextBox";
             this.MaxArea_TextBox.Size = new System.Drawing.Size(140, 22);
             this.MaxArea_TextBox.TabIndex = 1;
-            this.MaxArea_TextBox.Text = "10000";
+            this.MaxArea_TextBox.Text = "100000";
             this.MaxArea_TextBox.TextChanged += new System.EventHandler(this.MaxArea_TextBox_TextChanged);
             // 
             // MinArea_TextBox
@@ -619,15 +629,6 @@
             this.tabControl1.Size = new System.Drawing.Size(239, 248);
             this.tabControl1.TabIndex = 3;
             // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(1290, 818);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(33, 12);
-            this.label5.TabIndex = 13;
-            this.label5.Text = "label5";
-            // 
             // Form1
             // 
             this.AllowDrop = true;
@@ -635,7 +636,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.ClientSize = new System.Drawing.Size(1352, 820);
-            this.Controls.Add(this.label5);
             this.Controls.Add(this.Main_panAndZoomPictureBox);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.Path_Textbox);
@@ -647,7 +647,7 @@
             this.Controls.Add(this.Report_RichTextBox);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
-            this.Text = "SEM Analyzer - koland";
+            this.Text = "SEM Analyser - koland #x";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.Form1_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.Form1_DragEnter);
@@ -723,12 +723,12 @@
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.Button DiscardSmallest_Button;
         private System.Windows.Forms.RichTextBox Binarization_Tooltip;
-        private System.Windows.Forms.Label label5;
         private System.Windows.Forms.CheckBox HighlightLS_CheckBox;
         private System.Windows.Forms.ToolStripLabel Length_Label;
         private System.Windows.Forms.ToolStripMenuItem ExportArea_Button;
         private System.Windows.Forms.ToolStripButton AutoLength_Button;
         private System.Windows.Forms.ToolStripButton SetScalingBar_Button;
+        private System.Windows.Forms.ToolStripTextBox ScaledUnit_TextBox;
     }
 }
 

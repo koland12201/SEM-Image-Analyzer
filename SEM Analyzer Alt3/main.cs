@@ -11,12 +11,15 @@ using System.Net;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using System.Reflection;
 
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using Emgu.CV.OCR;
+
+
 
 namespace SEM_Analyzer_Alt3
 {
@@ -43,7 +46,9 @@ namespace SEM_Analyzer_Alt3
         VectorOfVectorOfPoint Contours = new VectorOfVectorOfPoint();
 
         //image properties
-        int ScaleBarPx = 0; 
+        int ScaleBarPx = 0;
+        double ImageZoomLevel = 100;
+        double PixelSize = 1;
         
 
         //settings
@@ -53,17 +58,22 @@ namespace SEM_Analyzer_Alt3
         int LineThickness = 1;
         Rectangle ROIRect = new Rectangle();
         Rectangle ScaleBarRect = new Rectangle();
+        Rectangle OCRRect = new Rectangle();
         Point ROIp1;
         bool SelectingROI = false;
         bool SelectingScalingBar = false;
+        bool SelectingOCRRegion = false;
         double UndoZoomLevel = 1;
         int UndoHorzScroll = 0;
         int UndoVertScroll = 0;
 
-
         public Form1()
         {
             InitializeComponent();
+
+            Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            string displayableVersion = $"{version.Build}";
+            this.Text = "SEM Analyzer - koland #" + displayableVersion;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -98,6 +108,12 @@ namespace SEM_Analyzer_Alt3
                 e.Effect = DragDropEffects.Copy;
                 DragIcon_PictureBox.SendToBack();
                 DragIcon_Label.SendToBack();
+                
+                LoadImage();
+                if(!OCRRect.IsEmpty)
+                {
+                    UpdateUnit();
+                }
             }
             else
                 e.Effect = DragDropEffects.None;
@@ -152,7 +168,6 @@ namespace SEM_Analyzer_Alt3
 
             try
             {
-
                 // eval offset from ROI to global for shifting localized contour image in ROI
                 Point ROIOffset = new Point();
                 ROIOffset.X = ROIRect.X;
@@ -198,7 +213,7 @@ namespace SEM_Analyzer_Alt3
                             CvInvoke.DrawContours(PictureBoxImage, Contours, i, new MCvScalar(0, 255, 0, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
 
                             // rebuild area array to exclude filtered values
-                            FilteredArea[ObjectAmount] = Area;
+                            FilteredArea[ObjectAmount] = Area*PixelSize;
 
                             ObjectAmount++;
                             if (Area > LargestArea)
@@ -223,13 +238,11 @@ namespace SEM_Analyzer_Alt3
                         }
                     }
 
-
                     if (HighlightLS_CheckBox.Checked)
                     {
                         CvInvoke.DrawContours(PictureBoxImage, Contours, LargestInd, new MCvScalar(0, 0, 255, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
                         CvInvoke.DrawContours(PictureBoxImage, Contours, SmallestInd, new MCvScalar(255, 0, 0, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
                     }
-
 
                     if (ObjectAmount > 0)
                     {
@@ -285,23 +298,21 @@ namespace SEM_Analyzer_Alt3
             // print report
             Report_RichTextBox.Text = "----------------------------------" +
                                        "\nReport (summary):\n" +
-                                       "Objects= " + ObjectAmount.ToString() + "\n" +
-                                       "Smallest = " + FilteredArea.Min().ToString() + "\n" +
-                                       "Largest Area= " + FilteredArea.Max().ToString() + "\n" +
+                                       "Objects = " + ObjectAmount.ToString() + "\n" +
+                                       "Smallest obj = " + FilteredArea.Min().ToString() + "\n" +
+                                       "Largest obj = " + FilteredArea.Max().ToString() + "\n" +
                                        "Mean Area= " + MeanArea.ToString() + "\n" +
                                        "Area std dev= " + StdDev.ToString() + "\n" +
-                                       "Unit = " + MeasUnit + "\n" +
-                                       "----------------------------------\n" +
-                                       "Data Extraction:\n" +
+                                       "----------------------------------" +
+                                       "\nData Extraction:\n" +
                                        "ROI X: " + ROIRect.X.ToString() + "\n" +
                                        "ROI Y: " + ROIRect.Y.ToString() + "\n" +
                                        "ROI Height: " + ROIRect.Height.ToString() + "\n" +
                                        "ROI Width: " + ROIRect.Width.ToString() + "\n"+
-                                       "Scale Bar reigon X: " + ScaleBarRect.X.ToString() + "\n" +
-                                       "Scale Bar reigon Y: " + ScaleBarRect.Y.ToString() + "\n" +
-                                       "Scale Bar reigon Width: " + ScaleBarRect.Width.ToString() + "\n" +
-                                       "Scale Bar reigon Height: " + ScaleBarRect.Height.ToString() + "\n" +
-                                       "Scale Bar Length in Px: " + ScaleBarPx.ToString() + "\n" +
+                                       "Scale Bar lengh in Pixels: " + ScaleBarPx.ToString() + "\n" +
+                                       "Scale Bar Real Length: " + ImageZoomLevel.ToString() + "\n" +
+                                       "Pixel Size in Real Units: " + PixelSize.ToString() + "\n" +
+                                       "Unit:  " + MeasUnit + "\n" +
                                        "----------------------------------" +
                                        "\nConfiguration:\n" +
                                        "Threshold(R/Grey): " + RedThreshold.ToString() + "\n" +
@@ -312,6 +323,21 @@ namespace SEM_Analyzer_Alt3
                                        "Inverted: " + Invert_CheckBox.Checked.ToString() + "\n";
 
         }
+        void UpdateUnit()
+        {
+            // Run OCR to detect unit
+            Image<Gray, byte> OCRImage = RawImage.ThresholdBinary(new Bgr(255 / 2, 255 / 2, 255 / 2), new Bgr(255, 255, 255)).Convert<Gray, Byte>();
+            OCRImage.ROI = OCRRect;
+            ScaledUnit_TextBox.Text = OCR(OCRImage);
+        }
+
+        void UpdatePxScaling()
+        {
+            ImageZoomLevel = Convert.ToDouble(ScaledUnit_TextBox.Text.Split(' ')[0].Trim());
+            MeasUnit = ScaledUnit_TextBox.Text.Split(' ')[1].Trim();
+            PixelSize = ImageZoomLevel / ScaleBarPx;
+        }
+         
         double Stddev(double[] Values)
         {
             double avg = Values.Average();
@@ -421,6 +447,8 @@ namespace SEM_Analyzer_Alt3
                 SelectRuler_Button.Checked = false;
                 SetScalingBar_Button.CheckState = CheckState.Unchecked;
                 SetScalingBar_Button.Checked = false;
+                SelectOCR_Button.CheckState = CheckState.Unchecked;
+                SelectOCR_Button.Checked = false;
             }
         }
         private void SetScalingBar_Button_Click(object sender, EventArgs e)
@@ -440,6 +468,29 @@ namespace SEM_Analyzer_Alt3
                 SelectRuler_Button.Checked = false;
                 SelectROI_Button.CheckState = CheckState.Unchecked;
                 SelectROI_Button.Checked = false;
+                SelectOCR_Button.CheckState = CheckState.Unchecked;
+                SelectOCR_Button.Checked = false;
+            }
+        }
+        private void SelectOCR_Button_Click(object sender, EventArgs e)
+        {
+            if (SelectOCR_Button.Checked)
+            {
+                SelectOCR_Button.CheckState = CheckState.Unchecked;
+                SelectOCR_Button.Checked = false;
+            }
+            else
+            {
+                SelectOCR_Button.CheckState = CheckState.Checked;
+                SelectOCR_Button.Checked = true;
+
+                //uncheck other toggle buttons
+                SelectRuler_Button.CheckState = CheckState.Unchecked;
+                SelectRuler_Button.Checked = false;
+                SelectROI_Button.CheckState = CheckState.Unchecked;
+                SelectROI_Button.Checked = false;
+                SetScalingBar_Button.CheckState = CheckState.Unchecked;
+                SetScalingBar_Button.Checked = false;
             }
         }
         private void SelectRuler_Button_Click(object sender, EventArgs e)
@@ -464,6 +515,8 @@ namespace SEM_Analyzer_Alt3
                 SelectROI_Button.Checked = false;
                 SetScalingBar_Button.CheckState = CheckState.Unchecked;
                 SetScalingBar_Button.Checked = false;
+                SelectOCR_Button.CheckState = CheckState.Unchecked;
+                SelectOCR_Button.Checked = false;
             }
         }
         private void AutoLength_Button_Click(object sender, EventArgs e)
@@ -478,7 +531,6 @@ namespace SEM_Analyzer_Alt3
             {
                 AutoLength_Button.CheckState = CheckState.Checked;
                 AutoLength_Button.Checked = true;
-
                 LoadImage();
             }
         }
@@ -526,7 +578,16 @@ namespace SEM_Analyzer_Alt3
                 UndoHorzScroll = horz;
                 UndoVertScroll = vert;
             }
+            if (SelectOCR_Button.Checked)
+            {
+                ROIp1 = MouseAtPoint;
+                SelectingOCRRegion = true;
 
+                // record imagebox built in zoom/pan so that it can be undo when the mouse is released (can't disable pan/zoom)
+                UndoZoomLevel = Main_panAndZoomPictureBox.ZoomScale;
+                UndoHorzScroll = horz;
+                UndoVertScroll = vert;
+            }
         }
         private void PictureBox_MouseUp(object sender, MouseEventArgs e)
         {
@@ -544,6 +605,7 @@ namespace SEM_Analyzer_Alt3
                 SelectROI_Button.CheckState = CheckState.Unchecked;
                 SelectROI_Button.Checked = false;
             }
+            // count scaling bar length on mouse up
             if (SetScalingBar_Button.Checked)
             {
                 SelectingScalingBar = false;
@@ -558,31 +620,47 @@ namespace SEM_Analyzer_Alt3
                 SetScalingBar_Button.CheckState = CheckState.Unchecked;
                 SetScalingBar_Button.Checked = false;
 
-                // find px length, might fail due to user boxing weird things
+                // find px length
+                Image<Bgr, byte> ScalebarImage = RawImage.Clone();
+                ScalebarImage.ROI = ScaleBarRect;
+                Image<Gray, byte> tempGrey = ScalebarImage.ThresholdBinary(new Bgr(125, 125, 125), new Bgr(255, 255, 255)).Convert<Gray, Byte>();
+                int FirstPx = 0;
+                int LastPx = 0;
 
-                    Image<Bgr, byte> ScalebarImage = RawImage.Clone();
-                    ScalebarImage.ROI = ScaleBarRect;
-                    Image<Gray, byte> tempGrey = ScalebarImage.ThresholdBinary(new Bgr(125, 125, 125), new Bgr(255, 255, 255)).Convert<Gray, Byte>();
-                    int FirstPx = 0;
-                    int LastPx = 0;
-
-                    for (int ix = 0; ix < tempGrey.Size.Width; ix++)
+                for (int ix = 0; ix < tempGrey.Size.Width; ix++)
+                {
+                    if (tempGrey.Data[tempGrey.Size.Height / 2, ix, 0] <= 255 / 2)
                     {
-                        if (tempGrey.Data[tempGrey.Size.Height / 2, ix, 0] <= 255 / 2)
+                        if (FirstPx == 1)
                         {
-                            if (FirstPx == 1)
-                            {
-                                FirstPx = ix;
-                            }
-                            else
-                            {
-                                LastPx = ix;
-                            }
-
+                            FirstPx = ix;
+                        }
+                        else
+                        {
+                            LastPx = ix;
                         }
                     }
-                    ScaleBarPx = LastPx - FirstPx;
-  
+                }
+                ScaleBarPx = LastPx - FirstPx;
+                LoadImage();
+                UpdatePxScaling();
+            }
+            if (SelectOCR_Button.Checked)
+            {
+                SelectingOCRRegion = false;
+
+                // undo autozoom and pan
+                Point point = new Point(UndoHorzScroll, UndoVertScroll);
+                Main_panAndZoomPictureBox.SetZoomScale(UndoZoomLevel, point);
+                Main_panAndZoomPictureBox.HorizontalScrollBar.Value = UndoHorzScroll;
+                Main_panAndZoomPictureBox.VerticalScrollBar.Value = UndoVertScroll;
+
+                // unpop button
+                SelectOCR_Button.CheckState = CheckState.Unchecked;
+                SelectOCR_Button.Checked = false;
+
+                UpdateUnit();
+
             }
         }
         private void PictureBox_MouseMove(object sender, MouseEventArgs e)
@@ -613,6 +691,19 @@ namespace SEM_Analyzer_Alt3
                 Refresh();
                 LoadImage();
             }
+            if (SelectOCR_Button.Checked && SelectingOCRRegion)
+            {
+                int horz = Main_panAndZoomPictureBox.HorizontalScrollBar.Value;
+                int vert = Main_panAndZoomPictureBox.VerticalScrollBar.Value;
+
+                Point ROIp2 = new Point(0, 0);
+                ROIp2.X = (int)(((double)e.X) / Main_panAndZoomPictureBox.ZoomScale) + horz;
+                ROIp2.Y = (int)(((double)e.Y) / Main_panAndZoomPictureBox.ZoomScale) + vert;
+
+                OCRRect = Main_panAndZoomPictureBox.GetRectangle(ROIp1, ROIp2);
+                Refresh();
+                LoadImage();
+            }
         }
         private void PictureBox_Draw(object sender, PaintEventArgs e)
         {
@@ -621,17 +712,18 @@ namespace SEM_Analyzer_Alt3
             e.Graphics.DrawRectangle(pen, ROIRect);
 
             // draw purple box for length
-            Pen pen2 = new Pen(Color.BlueViolet, 1);
-            e.Graphics.DrawRectangle(pen2, ScaleBarRect);
+            pen.Color = Color.BlueViolet;
+            e.Graphics.DrawRectangle(pen, ScaleBarRect);
+
+            // draw purple box for length
+            pen.Color = Color.Violet;
+            e.Graphics.DrawRectangle(pen, OCRRect);
+
 
             if (SelectRuler_Button.Checked)
             {
                 if (RulerPoints.Count > 1) e.Graphics.DrawLines(Pens.Red, RulerPoints.ToArray());
-            }
-
-
-            
-
+            }      
             if (AutoLength_Button.Checked)
             {
                 for (int i = 0; i < ObjectAmount; i++)
@@ -789,6 +881,19 @@ namespace SEM_Analyzer_Alt3
             BlueThreshold = BlueThreshold_TrackBar.Value;
             LoadImage();
         }
+
+        private void ScaledUnit_TextBox_Changed(object sender, EventArgs e)
+        {
+            try
+            {
+                UpdatePxScaling();
+            }
+            catch
+            {
+            }
+            LoadImage();
+        }
+
         public static Tuple<double[], double[]> KernelDensityEstimation(double[] data, double sigma, int nsteps)
         {
             // probability density function (PDF) signal analysis
@@ -844,6 +949,16 @@ namespace SEM_Analyzer_Alt3
                             + (points[i - 1].Y - points[i].Y) * (points[i - 1].Y - points[i].Y));
             }
             return len;
+        }
+
+        string OCR(Image<Gray,byte> Img)
+        {
+            string path = Path.GetDirectoryName(Path.GetFullPath("eng.traineddata"))+"\\";
+            string lang = Path.GetFileNameWithoutExtension("eng.traineddata").Split('.')[0];
+
+            Emgu.CV.OCR.Tesseract OCREngine = new Tesseract(path, lang, OcrEngineMode.Default);
+            OCREngine.SetImage(Img);
+            return OCREngine.GetUTF8Text();
         }
     }
 }
