@@ -404,7 +404,7 @@ namespace SEM_Analyzer_Alt3
         private void distributionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // prepare data
-            var ans = KernelDensityEstimation(FilteredArea, 200, 1000);
+            var ans = KernelDensityEstimation(FilteredArea, Convert.ToDouble(KDESigma_TextBox.Text), 1000);
 
             // show plot
             Graph_Form graph_Form = new Graph_Form();
@@ -766,7 +766,6 @@ namespace SEM_Analyzer_Alt3
             Emgu.CV.Image<Bgr, byte> temp = new Image<Bgr, byte>(BinaryROI.Width, BinaryROI.Height);
             temp = ~temp; //invert black to white background
 
-
             // eval contour area 
             double LargestArea = 0;
             int LargestInd = 0;
@@ -819,7 +818,7 @@ namespace SEM_Analyzer_Alt3
             try
             {
                 MaxArea_TextBox.Text=(FilteredArea.Max()/PixelSize).ToString();
-                MaxArea = FilteredArea.Max();
+                MaxArea = FilteredArea.Max() / PixelSize;
             }
             catch
             {
@@ -832,7 +831,7 @@ namespace SEM_Analyzer_Alt3
             try
             {
                 MinArea_TextBox.Text = (FilteredArea.Min() / PixelSize).ToString();
-                MinArea = FilteredArea.Min();
+                MinArea = FilteredArea.Min() / PixelSize;
             }
             catch
             {
@@ -964,10 +963,11 @@ namespace SEM_Analyzer_Alt3
             MinArea_TextBox.Text = ReadSetting("MinArea_TextBox.Text");
             MaxArea_TextBox.Text = ReadSetting("MaxArea_TextBox.Text");
 
-            LoadImage();
+            
             FindPixelLength();
             UpdateUnit();
             UpdatePxScaling();
+            LoadImage();
         }
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {

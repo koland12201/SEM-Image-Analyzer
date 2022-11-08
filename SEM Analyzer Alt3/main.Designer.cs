@@ -86,6 +86,8 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.SaveConfig_Button = new System.Windows.Forms.Button();
             this.LoadConfig_Button = new System.Windows.Forms.Button();
+            this.KDESigma_TextBox = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.DragIcon_PictureBox)).BeginInit();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Main_panAndZoomPictureBox)).BeginInit();
@@ -363,21 +365,21 @@
             // rawImageInROIToolStripMenuItem1
             // 
             this.rawImageInROIToolStripMenuItem1.Name = "rawImageInROIToolStripMenuItem1";
-            this.rawImageInROIToolStripMenuItem1.Size = new System.Drawing.Size(167, 22);
+            this.rawImageInROIToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             this.rawImageInROIToolStripMenuItem1.Text = "Raw Image in ROI";
             this.rawImageInROIToolStripMenuItem1.Click += new System.EventHandler(this.ShowRawImg_Button_Click);
             // 
             // binarizationToolStripMenuItem1
             // 
             this.binarizationToolStripMenuItem1.Name = "binarizationToolStripMenuItem1";
-            this.binarizationToolStripMenuItem1.Size = new System.Drawing.Size(167, 22);
+            this.binarizationToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             this.binarizationToolStripMenuItem1.Text = "Binarization";
             this.binarizationToolStripMenuItem1.Click += new System.EventHandler(this.BinarizationVew_Button_Click);
             // 
             // contourToolStripMenuItem1
             // 
             this.contourToolStripMenuItem1.Name = "contourToolStripMenuItem1";
-            this.contourToolStripMenuItem1.Size = new System.Drawing.Size(167, 22);
+            this.contourToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             this.contourToolStripMenuItem1.Text = "Contour";
             this.contourToolStripMenuItem1.Click += new System.EventHandler(this.ContourView_Button_Click);
             // 
@@ -391,6 +393,8 @@
             // tabPage3
             // 
             this.tabPage3.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.tabPage3.Controls.Add(this.label5);
+            this.tabPage3.Controls.Add(this.KDESigma_TextBox);
             this.tabPage3.Controls.Add(this.DiscardSmallest_Button);
             this.tabPage3.Controls.Add(this.DiscardLargest_Button);
             this.tabPage3.Controls.Add(this.label2);
@@ -664,6 +668,23 @@
             this.LoadConfig_Button.UseVisualStyleBackColor = true;
             this.LoadConfig_Button.Click += new System.EventHandler(this.LoadConfig_Button_Click);
             // 
+            // KDESigma_TextBox
+            // 
+            this.KDESigma_TextBox.Location = new System.Drawing.Point(88, 140);
+            this.KDESigma_TextBox.Name = "KDESigma_TextBox";
+            this.KDESigma_TextBox.Size = new System.Drawing.Size(140, 22);
+            this.KDESigma_TextBox.TabIndex = 7;
+            this.KDESigma_TextBox.Text = "150";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(16, 145);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(71, 12);
+            this.label5.TabIndex = 8;
+            this.label5.Text = "Sigma (KDE):";
+            // 
             // Form1
             // 
             this.AllowDrop = true;
@@ -769,6 +790,8 @@
         private System.Windows.Forms.ToolStripButton ResetRegion_Button;
         private System.Windows.Forms.Button SaveConfig_Button;
         private System.Windows.Forms.Button LoadConfig_Button;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox KDESigma_TextBox;
     }
 }
 
