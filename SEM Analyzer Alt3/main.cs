@@ -401,17 +401,17 @@ namespace SEM_Analyzer_Alt3
         }
 
 
-        private void distrubutionToolStripMenuItem_Click(object sender, EventArgs e)
+        private void distributionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // prepare data
-            var ans = KernelDensityEstimation(FilteredArea, 50, 1000);
+            var ans = KernelDensityEstimation(FilteredArea, 200, 1000);
 
             // show plot
             Graph_Form graph_Form = new Graph_Form();
-            Graph_Form.Title = "Area Distrubution";
+            Graph_Form.Title = "Area Distribution";
             Graph_Form.x = ans.Item1;
             Graph_Form.y = ans.Item2;
-            Graph_Form.XLabel = "Area";
+            Graph_Form.XLabel = "Area ["+MeasUnit+"^2]";
             Graph_Form.YLabel = "Density";
             graph_Form.ShowDialog();
         }
@@ -627,31 +627,11 @@ namespace SEM_Analyzer_Alt3
                 SetScalingBar_Button.CheckState = CheckState.Unchecked;
                 SetScalingBar_Button.Checked = false;
 
-                // find px length
-                Image<Bgr, byte> ScalebarImage = RawImage.Clone();
-                ScalebarImage.ROI = ScaleBarRect;
-                Image<Gray, byte> tempGrey = ScalebarImage.ThresholdBinary(new Bgr(125, 125, 125), new Bgr(255, 255, 255)).Convert<Gray, Byte>();
-                int FirstPx = 0;
-                int LastPx = 0;
-
-                for (int ix = 0; ix < tempGrey.Size.Width; ix++)
-                {
-                    if (tempGrey.Data[tempGrey.Size.Height / 2, ix, 0] <= 255 / 2)
-                    {
-                        if (FirstPx == 1)
-                        {
-                            FirstPx = ix;
-                        }
-                        else
-                        {
-                            LastPx = ix;
-                        }
-                    }
-                }
-                ScaleBarPx = LastPx - FirstPx;
+                // update length based on length region
+                FindPixelLength();
 
                 // if no OCR reigon is defined, use px as unit (can be overwritten)
-                if(OCRRect.IsEmpty)
+                if (OCRRect.IsEmpty)
                 {
                     ScaledUnit_TextBox.Text=ScaleBarPx+" px";
                 }
@@ -782,16 +762,12 @@ namespace SEM_Analyzer_Alt3
 
         private void ContourView_Button_Click(object sender, EventArgs e)
         {
-            // show only contour
+            // Generate white background
             Emgu.CV.Image<Bgr, byte> temp = new Image<Bgr, byte>(BinaryROI.Width, BinaryROI.Height);
             temp = ~temp; //invert black to white background
 
-            // find contour
-            VectorOfVectorOfPoint Contours = new VectorOfVectorOfPoint();
-            CvInvoke.FindContours(BinaryROI, Contours, null, RetrType.List, ChainApproxMethod.ChainApproxNone);
 
             // eval contour area 
-            Array.Resize(ref FilteredArea, Contours.Size);
             double LargestArea = 0;
             int LargestInd = 0;
             double SmallestArea = 0;
@@ -842,7 +818,7 @@ namespace SEM_Analyzer_Alt3
         {
             try
             {
-                MaxArea_TextBox.Text=FilteredArea.Max().ToString();
+                MaxArea_TextBox.Text=(FilteredArea.Max()/PixelSize).ToString();
                 MaxArea = FilteredArea.Max();
             }
             catch
@@ -855,7 +831,7 @@ namespace SEM_Analyzer_Alt3
         {
             try
             {
-                MinArea_TextBox.Text = FilteredArea.Min().ToString();
+                MinArea_TextBox.Text = (FilteredArea.Min() / PixelSize).ToString();
                 MinArea = FilteredArea.Min();
             }
             catch
@@ -887,8 +863,6 @@ namespace SEM_Analyzer_Alt3
 
         }
 
-
-
         private void BlueThreshold_TrackBar_Scroll(object sender, EventArgs e)
         {
             BlueThreshold = BlueThreshold_TrackBar.Value;
@@ -915,7 +889,8 @@ namespace SEM_Analyzer_Alt3
             ScaleBarRect  =new Rectangle();
 
             // reset unit
-            MeasUnit = "px";
+            ScaledUnit_TextBox.Text = "? px";
+            PixelSize = 1;
 
             LoadImage();
         }
@@ -990,12 +965,40 @@ namespace SEM_Analyzer_Alt3
             MaxArea_TextBox.Text = ReadSetting("MaxArea_TextBox.Text");
 
             LoadImage();
+            FindPixelLength();
+            UpdateUnit();
+            UpdatePxScaling();
         }
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
         }
 
+        void FindPixelLength()
+        {
+            // find px length
+            Image<Bgr, byte> ScalebarImage = RawImage.Clone();
+            ScalebarImage.ROI = ScaleBarRect;
+            Image<Gray, byte> tempGrey = ScalebarImage.ThresholdBinary(new Bgr(125, 125, 125), new Bgr(255, 255, 255)).Convert<Gray, Byte>();
+            int FirstPx = 0;
+            int LastPx = 0;
+
+            for (int ix = 0; ix < tempGrey.Size.Width; ix++)
+            {
+                if (tempGrey.Data[tempGrey.Size.Height / 2, ix, 0] <= 255 / 2)
+                {
+                    if (FirstPx == 1)
+                    {
+                        FirstPx = ix;
+                    }
+                    else
+                    {
+                        LastPx = ix;
+                    }
+                }
+            }
+            ScaleBarPx = LastPx - FirstPx;
+        }
         static string ReadSetting(string key)
         {
             try

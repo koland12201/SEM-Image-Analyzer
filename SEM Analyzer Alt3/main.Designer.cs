@@ -54,7 +54,7 @@
             this.ExportContour_Button = new System.Windows.Forms.ToolStripMenuItem();
             this.ExportArea_Button = new System.Windows.Forms.ToolStripMenuItem();
             this.plotDataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.areaDistrubutionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.areaDistributionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorHistogramToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.processToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rawImageInROIToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -329,24 +329,24 @@
             // plotDataToolStripMenuItem
             // 
             this.plotDataToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.areaDistrubutionToolStripMenuItem,
+            this.areaDistributionToolStripMenuItem,
             this.colorHistogramToolStripMenuItem});
             this.plotDataToolStripMenuItem.Name = "plotDataToolStripMenuItem";
             this.plotDataToolStripMenuItem.Size = new System.Drawing.Size(67, 20);
             this.plotDataToolStripMenuItem.Text = "Plot Data";
             this.plotDataToolStripMenuItem.Click += new System.EventHandler(this.plotDataToolStripMenuItem_Click);
             // 
-            // areaDistrubutionToolStripMenuItem
+            // areaDistributionToolStripMenuItem
             // 
-            this.areaDistrubutionToolStripMenuItem.Name = "areaDistrubutionToolStripMenuItem";
-            this.areaDistrubutionToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
-            this.areaDistrubutionToolStripMenuItem.Text = "Area Distrubution";
-            this.areaDistrubutionToolStripMenuItem.Click += new System.EventHandler(this.distrubutionToolStripMenuItem_Click);
+            this.areaDistributionToolStripMenuItem.Name = "areaDistributionToolStripMenuItem";
+            this.areaDistributionToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.areaDistributionToolStripMenuItem.Text = "Area Distribution";
+            this.areaDistributionToolStripMenuItem.Click += new System.EventHandler(this.distributionToolStripMenuItem_Click);
             // 
             // colorHistogramToolStripMenuItem
             // 
             this.colorHistogramToolStripMenuItem.Name = "colorHistogramToolStripMenuItem";
-            this.colorHistogramToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.colorHistogramToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.colorHistogramToolStripMenuItem.Text = "Color Histogram";
             this.colorHistogramToolStripMenuItem.Click += new System.EventHandler(this.colorHistogramToolStripMenuItem_Click);
             // 
@@ -456,7 +456,7 @@
             this.MinArea_TextBox.Name = "MinArea_TextBox";
             this.MinArea_TextBox.Size = new System.Drawing.Size(140, 22);
             this.MinArea_TextBox.TabIndex = 0;
-            this.MinArea_TextBox.Text = "0";
+            this.MinArea_TextBox.Text = "1";
             this.MinArea_TextBox.TextChanged += new System.EventHandler(this.MinArea_TextBox_TextChanged);
             // 
             // tabPage2
@@ -728,7 +728,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem plotDataToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem areaDistrubutionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem areaDistributionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem filesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem processToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem rawImageInROIToolStripMenuItem1;
