@@ -42,6 +42,7 @@
             this.Enabled_Button = new System.Windows.Forms.ToolStripButton();
             this.UnZoom_button = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.ResetRegion_Button = new System.Windows.Forms.ToolStripButton();
             this.SetScalingBar_Button = new System.Windows.Forms.ToolStripButton();
             this.ScaledUnit_TextBox = new System.Windows.Forms.ToolStripTextBox();
             this.AutoLength_Button = new System.Windows.Forms.ToolStripButton();
@@ -83,6 +84,8 @@
             this.GreenThreshold_TrackBar = new System.Windows.Forms.TrackBar();
             this.RedThreshold_TrackBar = new System.Windows.Forms.TrackBar();
             this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.SaveConfig_Button = new System.Windows.Forms.Button();
+            this.LoadConfig_Button = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.DragIcon_PictureBox)).BeginInit();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Main_panAndZoomPictureBox)).BeginInit();
@@ -161,7 +164,7 @@
             this.SelectRuler_Button.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.SelectRuler_Button.Name = "SelectRuler_Button";
             this.SelectRuler_Button.Size = new System.Drawing.Size(23, 22);
-            this.SelectRuler_Button.Text = "toolStripButton2";
+            this.SelectRuler_Button.Text = "Measure distance between 2 points";
             this.SelectRuler_Button.Click += new System.EventHandler(this.SelectRuler_Button_Click);
             // 
             // SelectOCR_Button
@@ -185,6 +188,7 @@
             this.Enabled_Button,
             this.UnZoom_button,
             this.toolStripSeparator2,
+            this.ResetRegion_Button,
             this.SelectROI_Button,
             this.SetScalingBar_Button,
             this.SelectOCR_Button,
@@ -225,6 +229,16 @@
             this.toolStripSeparator2.Name = "toolStripSeparator2";
             this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
             // 
+            // ResetRegion_Button
+            // 
+            this.ResetRegion_Button.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ResetRegion_Button.Image = ((System.Drawing.Image)(resources.GetObject("ResetRegion_Button.Image")));
+            this.ResetRegion_Button.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ResetRegion_Button.Name = "ResetRegion_Button";
+            this.ResetRegion_Button.Size = new System.Drawing.Size(23, 22);
+            this.ResetRegion_Button.Text = "Reset Region and ROIs";
+            this.ResetRegion_Button.Click += new System.EventHandler(this.ResetRegion_Button_Click);
+            // 
             // SetScalingBar_Button
             // 
             this.SetScalingBar_Button.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -240,7 +254,7 @@
             this.ScaledUnit_TextBox.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.ScaledUnit_TextBox.Name = "ScaledUnit_TextBox";
             this.ScaledUnit_TextBox.Size = new System.Drawing.Size(50, 25);
-            this.ScaledUnit_TextBox.Text = "100 px";
+            this.ScaledUnit_TextBox.Text = "? px";
             this.ScaledUnit_TextBox.TextChanged += new System.EventHandler(this.ScaledUnit_TextBox_Changed);
             // 
             // AutoLength_Button
@@ -372,6 +386,7 @@
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.helpToolStripMenuItem.Text = "Help";
+            this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
             // 
             // tabPage3
             // 
@@ -441,7 +456,7 @@
             this.MinArea_TextBox.Name = "MinArea_TextBox";
             this.MinArea_TextBox.Size = new System.Drawing.Size(140, 22);
             this.MinArea_TextBox.TabIndex = 0;
-            this.MinArea_TextBox.Text = "15";
+            this.MinArea_TextBox.Text = "0";
             this.MinArea_TextBox.TextChanged += new System.EventHandler(this.MinArea_TextBox_TextChanged);
             // 
             // tabPage2
@@ -629,6 +644,26 @@
             this.tabControl1.Size = new System.Drawing.Size(239, 248);
             this.tabControl1.TabIndex = 3;
             // 
+            // SaveConfig_Button
+            // 
+            this.SaveConfig_Button.Location = new System.Drawing.Point(1261, 557);
+            this.SaveConfig_Button.Name = "SaveConfig_Button";
+            this.SaveConfig_Button.Size = new System.Drawing.Size(38, 23);
+            this.SaveConfig_Button.TabIndex = 14;
+            this.SaveConfig_Button.Text = "Save";
+            this.SaveConfig_Button.UseVisualStyleBackColor = true;
+            this.SaveConfig_Button.Click += new System.EventHandler(this.SaveConfig_Button_Click);
+            // 
+            // LoadConfig_Button
+            // 
+            this.LoadConfig_Button.Location = new System.Drawing.Point(1297, 557);
+            this.LoadConfig_Button.Name = "LoadConfig_Button";
+            this.LoadConfig_Button.Size = new System.Drawing.Size(39, 23);
+            this.LoadConfig_Button.TabIndex = 15;
+            this.LoadConfig_Button.Text = "Load";
+            this.LoadConfig_Button.UseVisualStyleBackColor = true;
+            this.LoadConfig_Button.Click += new System.EventHandler(this.LoadConfig_Button_Click);
+            // 
             // Form1
             // 
             this.AllowDrop = true;
@@ -636,6 +671,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.ClientSize = new System.Drawing.Size(1352, 820);
+            this.Controls.Add(this.LoadConfig_Button);
+            this.Controls.Add(this.SaveConfig_Button);
             this.Controls.Add(this.Main_panAndZoomPictureBox);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.Path_Textbox);
@@ -643,8 +680,8 @@
             this.Controls.Add(this.DragIcon_PictureBox);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.menuStrip1);
-            this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.Report_RichTextBox);
+            this.Controls.Add(this.tabControl1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
             this.Text = "SEM Analyser - koland #x";
@@ -729,6 +766,9 @@
         private System.Windows.Forms.ToolStripButton AutoLength_Button;
         private System.Windows.Forms.ToolStripButton SetScalingBar_Button;
         private System.Windows.Forms.ToolStripTextBox ScaledUnit_TextBox;
+        private System.Windows.Forms.ToolStripButton ResetRegion_Button;
+        private System.Windows.Forms.Button SaveConfig_Button;
+        private System.Windows.Forms.Button LoadConfig_Button;
     }
 }
 

@@ -30,6 +30,7 @@
         {
             this.components = new System.ComponentModel.Container();
             this.GraphControl = new ZedGraph.ZedGraphControl();
+            this.SaveGraph_Button = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // GraphControl
@@ -45,12 +46,24 @@
             this.GraphControl.ScrollMinY2 = 0D;
             this.GraphControl.Size = new System.Drawing.Size(762, 603);
             this.GraphControl.TabIndex = 0;
+            this.GraphControl.UseExtendedPrintDialog = true;
+            // 
+            // SaveGraph_Button
+            // 
+            this.SaveGraph_Button.Location = new System.Drawing.Point(681, 583);
+            this.SaveGraph_Button.Name = "SaveGraph_Button";
+            this.SaveGraph_Button.Size = new System.Drawing.Size(84, 23);
+            this.SaveGraph_Button.TabIndex = 1;
+            this.SaveGraph_Button.Text = "Save As Image";
+            this.SaveGraph_Button.UseVisualStyleBackColor = true;
+            this.SaveGraph_Button.Click += new System.EventHandler(this.SaveGraph_Button_Click);
             // 
             // Graph_Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(786, 627);
+            this.Controls.Add(this.SaveGraph_Button);
             this.Controls.Add(this.GraphControl);
             this.Name = "Graph_Form";
             this.Text = "Graph";
@@ -62,5 +75,6 @@
         #endregion
 
         private ZedGraph.ZedGraphControl GraphControl;
+        private System.Windows.Forms.Button SaveGraph_Button;
     }
 }

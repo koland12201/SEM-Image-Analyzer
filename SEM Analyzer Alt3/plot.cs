@@ -23,6 +23,11 @@ namespace SEM_Analyzer_Alt3
             InitializeComponent();
         }
 
+        private void SaveGraph_Button_Click(object sender, EventArgs e)
+        {
+            GraphControl.SaveAsBitmap();
+        }
+
         private void Form2_Open(object sender, EventArgs e)
         {
             // import values 
@@ -39,6 +44,7 @@ namespace SEM_Analyzer_Alt3
             GraphControl.GraphPane.YAxis.ResetAutoScale(GraphControl.GraphPane, CreateGraphics());
             GraphControl.GraphPane.XAxis.ResetAutoScale(GraphControl.GraphPane, CreateGraphics());
             GraphControl.Refresh();
+
         }
     }
 }

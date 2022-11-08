@@ -6,12 +6,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Numerics;
 using System.Threading;
-using System.Net.Sockets;
-using System.Net;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Configuration;
 
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -40,7 +39,6 @@ namespace SEM_Analyzer_Alt3
         double StdDev = 0;
         double[] FilteredArea;
         RotatedRect[] BoundingBoxes = new RotatedRect[1];
-        string MeasUnit = "px";
         double RulerLength = 0;
         List<Point> RulerPoints = new List<Point>();
         VectorOfVectorOfPoint Contours = new VectorOfVectorOfPoint();
@@ -49,7 +47,7 @@ namespace SEM_Analyzer_Alt3
         int ScaleBarPx = 0;
         double ImageZoomLevel = 100;
         double PixelSize = 1;
-        
+        string MeasUnit = "px";
 
         //settings
         int RedThreshold, GreenThreshold, BlueThreshold;
@@ -71,7 +69,7 @@ namespace SEM_Analyzer_Alt3
         {
             InitializeComponent();
 
-            Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            Version version = Assembly.GetExecutingAssembly().GetName().Version;
             string displayableVersion = $"{version.Build}";
             this.Text = "SEM Analyzer - koland #" + displayableVersion;
         }
@@ -299,9 +297,9 @@ namespace SEM_Analyzer_Alt3
             Report_RichTextBox.Text = "----------------------------------" +
                                        "\nReport (summary):\n" +
                                        "Objects = " + ObjectAmount.ToString() + "\n" +
-                                       "Smallest obj = " + FilteredArea.Min().ToString() + "\n" +
-                                       "Largest obj = " + FilteredArea.Max().ToString() + "\n" +
-                                       "Mean Area= " + MeanArea.ToString() + "\n" +
+                                       "Smallest obj = " + FilteredArea.Min().ToString() + " " + MeasUnit + "^2\n" +
+                                       "Largest obj = " + FilteredArea.Max().ToString() + " " + MeasUnit + "^2\n" +
+                                       "Mean Area= " + MeanArea.ToString() + " " + MeasUnit + "^2\n" +
                                        "Area std dev= " + StdDev.ToString() + "\n" +
                                        "----------------------------------" +
                                        "\nData Extraction:\n" +
@@ -358,14 +356,23 @@ namespace SEM_Analyzer_Alt3
 
         private void MinArea_TextBox_TextChanged(object sender, EventArgs e)
         {
-            MinArea = Convert.ToDouble(MinArea_TextBox.Text);
+            try
+            {
+                MinArea = Convert.ToDouble(MinArea_TextBox.Text);
+            }
+            catch
+            {
+            }
             LoadImage();
         }
 
         private void MaxArea_TextBox_TextChanged(object sender, EventArgs e)
         {
-
-            MaxArea = Convert.ToDouble(MaxArea_TextBox.Text);
+            try
+            {
+                MaxArea = Convert.ToDouble(MaxArea_TextBox.Text);
+            }
+            catch { }
             LoadImage();
         }
 
@@ -566,7 +573,7 @@ namespace SEM_Analyzer_Alt3
                 UndoVertScroll = vert;
             }
 
-            if (SelectRuler_Button.Checked)
+            if (SelectRuler_Button.Checked && e.Button == MouseButtons.Left)
             {
                 RulerPoints.Add(MouseAtPoint);
                 Main_panAndZoomPictureBox.Invalidate();
@@ -642,6 +649,12 @@ namespace SEM_Analyzer_Alt3
                     }
                 }
                 ScaleBarPx = LastPx - FirstPx;
+
+                // if no OCR reigon is defined, use px as unit (can be overwritten)
+                if(OCRRect.IsEmpty)
+                {
+                    ScaledUnit_TextBox.Text=ScaleBarPx+" px";
+                }
                 LoadImage();
                 UpdatePxScaling();
             }
@@ -658,9 +671,9 @@ namespace SEM_Analyzer_Alt3
                 // unpop button
                 SelectOCR_Button.CheckState = CheckState.Unchecked;
                 SelectOCR_Button.Checked = false;
-
                 UpdateUnit();
-
+                UpdatePxScaling();
+                LoadImage();
             }
         }
         private void PictureBox_MouseMove(object sender, MouseEventArgs e)
@@ -724,14 +737,14 @@ namespace SEM_Analyzer_Alt3
             {
                 if (RulerPoints.Count > 1) e.Graphics.DrawLines(Pens.Red, RulerPoints.ToArray());
             }      
-            if (AutoLength_Button.Checked)
+            if (AutoLength_Button.Checked && EnabledAnalysis)
             {
                 for (int i = 0; i < ObjectAmount; i++)
                 {
                     Font drawFont = new Font("Arial", 3);
                     SolidBrush drawBrush = new SolidBrush(Color.Blue);
                     PointF drawPoint = new PointF(BoundingBoxes[i].Center.X+ROIRect.X- BoundingBoxes[i].Size.Width/2, BoundingBoxes[i].Center.Y+ ROIRect.Y-3);
-                    e.Graphics.DrawString("L:" + Math.Round(BoundingBoxes[i].Size.Height, 1)+",W:"+ Math.Round(BoundingBoxes[i].Size.Width, 1), drawFont, drawBrush, drawPoint);
+                    e.Graphics.DrawString("L:" + Math.Round(BoundingBoxes[i].Size.Height*PixelSize, 1)+",W:"+ Math.Round(BoundingBoxes[i].Size.Width * PixelSize, 1) + " (" + MeasUnit + ")", drawFont, drawBrush, drawPoint);
                 }
             }
 
@@ -892,6 +905,132 @@ namespace SEM_Analyzer_Alt3
             {
             }
             LoadImage();
+        }
+
+        private void ResetRegion_Button_Click(object sender, EventArgs e)
+        {
+            // set all rec to 0    
+            ROIRect = new Rectangle();
+            OCRRect = new Rectangle();
+            ScaleBarRect  =new Rectangle();
+
+            // reset unit
+            MeasUnit = "px";
+
+            LoadImage();
+        }
+        private void SaveConfig_Button_Click(object sender, EventArgs e)
+        {
+            // save regions
+            AddUpdateAppSettings("ROIRect.X", ROIRect.X.ToString());
+            AddUpdateAppSettings("ROIRect.Y", ROIRect.Y.ToString());
+            AddUpdateAppSettings("ROIRect.Width", ROIRect.Width.ToString());
+            AddUpdateAppSettings("ROIRect.Height", ROIRect.Height.ToString());
+
+            AddUpdateAppSettings("OCRRect.X", OCRRect.X.ToString());
+            AddUpdateAppSettings("OCRRect.Y", OCRRect.Y.ToString());
+            AddUpdateAppSettings("OCRRect.Width", OCRRect.Width.ToString());
+            AddUpdateAppSettings("OCRRect.Height", OCRRect.Height.ToString());
+
+            AddUpdateAppSettings("ScaleBarRect.X", ScaleBarRect.X.ToString());
+            AddUpdateAppSettings("ScaleBarRect.Y", ScaleBarRect.Y.ToString());
+            AddUpdateAppSettings("ScaleBarRect.Width", ScaleBarRect.Width.ToString());
+            AddUpdateAppSettings("ScaleBarRect.Height", ScaleBarRect.Height.ToString());
+
+            // save threshold page
+            AddUpdateAppSettings("RedThreshold_TrackBar.Value", RedThreshold_TrackBar.Value.ToString());
+            AddUpdateAppSettings("GreenThreshold_TrackBar.Value", GreenThreshold_TrackBar.Value.ToString());
+            AddUpdateAppSettings("BlueThreshold_TrackBar.Value", BlueThreshold_TrackBar.Value.ToString());
+
+            AddUpdateAppSettings("Invert_CheckBox.Checked", Invert_CheckBox.Checked.ToString());
+            AddUpdateAppSettings("Grayscale_CheckBox.Checked", Grayscale_CheckBox.Checked.ToString());
+
+            // contour page
+            AddUpdateAppSettings("LineThickness_TrackBar.Value", LineThickness_TrackBar.Value.ToString());
+            AddUpdateAppSettings("HighlightLS_CheckBox.Checked", HighlightLS_CheckBox.Checked.ToString());
+
+            // Filter page
+            AddUpdateAppSettings("MinArea_TextBox.Text", MinArea_TextBox.Text);
+            AddUpdateAppSettings("MaxArea_TextBox.Text", MaxArea_TextBox.Text);
+
+
+        }
+        private void LoadConfig_Button_Click(object sender, EventArgs e)
+        {
+            // load Regions
+            ROIRect.X =Convert.ToInt32(ReadSetting("ROIRect.X"));
+            ROIRect.Y = Convert.ToInt32(ReadSetting("ROIRect.Y"));
+            ROIRect.Width = Convert.ToInt32(ReadSetting("ROIRect.Width"));
+            ROIRect.Height = Convert.ToInt32(ReadSetting("ROIRect.Height"));
+
+            OCRRect.X = Convert.ToInt32(ReadSetting("OCRRect.X"));
+            OCRRect.Y = Convert.ToInt32(ReadSetting("OCRRect.Y"));
+            OCRRect.Width = Convert.ToInt32(ReadSetting("OCRRect.Width"));
+            OCRRect.Height = Convert.ToInt32(ReadSetting("OCRRect.Height"));
+
+            ScaleBarRect.X = Convert.ToInt32(ReadSetting("ScaleBarRect.X"));
+            ScaleBarRect.Y = Convert.ToInt32(ReadSetting("ScaleBarRect.Y"));
+            ScaleBarRect.Width = Convert.ToInt32(ReadSetting("ScaleBarRect.Width"));
+            ScaleBarRect.Height = Convert.ToInt32(ReadSetting("ScaleBarRect.Height"));
+
+            // load threshold page
+            RedThreshold_TrackBar.Value = Convert.ToInt32(ReadSetting("RedThreshold_TrackBar.Value"));
+            GreenThreshold_TrackBar.Value = Convert.ToInt32(ReadSetting("GreenThreshold_TrackBar.Value"));
+            BlueThreshold_TrackBar.Value = Convert.ToInt32(ReadSetting("BlueThreshold_TrackBar.Value"));
+
+            Invert_CheckBox.Checked = Convert.ToBoolean(ReadSetting("Invert_CheckBox.Checked"));
+            Grayscale_CheckBox.Checked = Convert.ToBoolean(ReadSetting("Grayscale_CheckBox.Checked"));
+
+            // load contour page
+            LineThickness_TrackBar.Value = Convert.ToInt32(ReadSetting("LineThickness_TrackBar.Value"));
+            HighlightLS_CheckBox.Checked = Convert.ToBoolean(ReadSetting("HighlightLS_CheckBox.Checked"));
+
+            // filter page
+            MinArea_TextBox.Text = ReadSetting("MinArea_TextBox.Text");
+            MaxArea_TextBox.Text = ReadSetting("MaxArea_TextBox.Text");
+
+            LoadImage();
+        }
+        private void helpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        static string ReadSetting(string key)
+        {
+            try
+            {
+                var appSettings = ConfigurationManager.AppSettings;
+                string result = appSettings[key] ?? "Not Found";
+                return result;
+            }
+            catch (System.Configuration.ConfigurationException)
+            {
+                System.Windows.Forms.MessageBox.Show("Error reading app settings");
+                return "Not Found";
+            }
+        }
+        static void AddUpdateAppSettings(string key, string value)
+        {
+            try
+            {
+                var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                var settings = configFile.AppSettings.Settings;
+                if (settings[key] == null)
+                {
+                    settings.Add(key, value);
+                }
+                else
+                {
+                    settings[key].Value = value;
+                }
+                configFile.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+            }
+            catch (ConfigurationErrorsException)
+            {
+                System.Windows.Forms.MessageBox.Show("Error writing app settings");
+            }
         }
 
         public static Tuple<double[], double[]> KernelDensityEstimation(double[] data, double sigma, int nsteps)
