@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Configuration;
+using System.Globalization;
 
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -18,10 +19,11 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using Emgu.CV.OCR;
 
-
+using CsvHelper;
 
 namespace SEM_Analyzer_Alt3
 {
+
     public partial class Form1 : Form
     {
         protected bool validData;
@@ -72,6 +74,7 @@ namespace SEM_Analyzer_Alt3
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
             string displayableVersion = $"{version.Build}";
             this.Text = "SEM Analyzer - koland #" + displayableVersion;
+
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -205,7 +208,7 @@ namespace SEM_Analyzer_Alt3
                     for (int i = 0; i < Contours.Size; i++)
                     {
                         double Area = CvInvoke.ContourArea(Contours[i], false);
-
+                        
                         if (Area > MinArea && Area < MaxArea)
                         {
                             CvInvoke.DrawContours(PictureBoxImage, Contours, i, new MCvScalar(0, 255, 0, 255), LineThickness, LineType.EightConnected, null, 2147483647, ROIOffset);
@@ -376,10 +379,6 @@ namespace SEM_Analyzer_Alt3
             LoadImage();
         }
 
-        private void ExportAsCSV_Button_Click(object sender, EventArgs e)
-        {
-
-        }
         private void Enabled_Button_Click(object sender, EventArgs e)
         {
             if (Enabled_Button.Checked)
@@ -859,7 +858,56 @@ namespace SEM_Analyzer_Alt3
 
         private void ExportArea_Button_Click(object sender, EventArgs e)
         {
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.Filter = "|*.csv";
+            saveFileDialog1.Title = "Export Area data";
+            saveFileDialog1.ShowDialog();
 
+            // If the file name is not an empty string open it for saving.
+            if (saveFileDialog1.FileName != "")
+            {
+                System.IO.FileStream fs = (System.IO.FileStream)saveFileDialog1.OpenFile();
+                var records = new List<ImageResult>();
+                for (int i = 0; i < FilteredArea.Length; i++)
+                {
+                    records.Add(new ImageResult { Area = FilteredArea[i] });
+                }
+                var writer = new StreamWriter(fs);
+                var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+                {
+                    csv.WriteRecords(records);
+                }
+                writer.Close();
+            }
+        }
+        private void ExportContour_Button_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.Filter = "|*.txt";
+            saveFileDialog1.Title = "Export Contour data";
+            saveFileDialog1.ShowDialog();
+
+            // If the file name is not an empty string open it for saving.
+            if (saveFileDialog1.FileName != "")
+            {
+                System.IO.FileStream fs = (System.IO.FileStream)saveFileDialog1.OpenFile();
+               
+                var writer = new StreamWriter(fs);
+                for (int i = 0; i < Contours.Size; i++)
+                {
+                    double Area = CvInvoke.ContourArea(Contours[i], false);
+                    if (Area > MinArea && Area < MaxArea)
+                    {
+                        for (int i2 = 0; i2 < Contours[i].ToArray().Length; i2++)
+                        {
+                            string test = "[" + Contours[i].ToArray()[i2].X.ToString() + "," + Contours[i].ToArray()[i2].Y.ToString() + "]";
+                            writer.WriteLine(test);
+                        }
+                        writer.WriteLine("/");
+                    }
+                }
+                writer.Close();
+            }
         }
 
         private void BlueThreshold_TrackBar_Scroll(object sender, EventArgs e)
@@ -1036,6 +1084,8 @@ namespace SEM_Analyzer_Alt3
             }
         }
 
+
+
         public static Tuple<double[], double[]> KernelDensityEstimation(double[] data, double sigma, int nsteps)
         {
             // probability density function (PDF) signal analysis
@@ -1101,6 +1151,16 @@ namespace SEM_Analyzer_Alt3
             Emgu.CV.OCR.Tesseract OCREngine = new Tesseract(path, lang, OcrEngineMode.Default);
             OCREngine.SetImage(Img);
             return OCREngine.GetUTF8Text();
+ 
         }
+    }
+    public class ImageResult
+    {
+        public double Area { get; set; }
+    }
+    public class ContourResult
+    {
+        public double X { get; set; }
+        public double Y { get; set; }
     }
 }

@@ -62,6 +62,8 @@
             this.contourToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.label5 = new System.Windows.Forms.Label();
+            this.KDESigma_TextBox = new System.Windows.Forms.TextBox();
             this.DiscardSmallest_Button = new System.Windows.Forms.Button();
             this.DiscardLargest_Button = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
@@ -86,8 +88,6 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.SaveConfig_Button = new System.Windows.Forms.Button();
             this.LoadConfig_Button = new System.Windows.Forms.Button();
-            this.KDESigma_TextBox = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.DragIcon_PictureBox)).BeginInit();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Main_panAndZoomPictureBox)).BeginInit();
@@ -318,13 +318,14 @@
             // ExportContour_Button
             // 
             this.ExportContour_Button.Name = "ExportContour_Button";
-            this.ExportContour_Button.Size = new System.Drawing.Size(155, 22);
+            this.ExportContour_Button.Size = new System.Drawing.Size(180, 22);
             this.ExportContour_Button.Text = "Export Contour";
+            this.ExportContour_Button.Click += new System.EventHandler(this.ExportContour_Button_Click);
             // 
             // ExportArea_Button
             // 
             this.ExportArea_Button.Name = "ExportArea_Button";
-            this.ExportArea_Button.Size = new System.Drawing.Size(155, 22);
+            this.ExportArea_Button.Size = new System.Drawing.Size(180, 22);
             this.ExportArea_Button.Text = "Export Area";
             this.ExportArea_Button.Click += new System.EventHandler(this.ExportArea_Button_Click);
             // 
@@ -341,14 +342,14 @@
             // areaDistributionToolStripMenuItem
             // 
             this.areaDistributionToolStripMenuItem.Name = "areaDistributionToolStripMenuItem";
-            this.areaDistributionToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.areaDistributionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.areaDistributionToolStripMenuItem.Text = "Area Distribution";
             this.areaDistributionToolStripMenuItem.Click += new System.EventHandler(this.distributionToolStripMenuItem_Click);
             // 
             // colorHistogramToolStripMenuItem
             // 
             this.colorHistogramToolStripMenuItem.Name = "colorHistogramToolStripMenuItem";
-            this.colorHistogramToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.colorHistogramToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.colorHistogramToolStripMenuItem.Text = "Color Histogram";
             this.colorHistogramToolStripMenuItem.Click += new System.EventHandler(this.colorHistogramToolStripMenuItem_Click);
             // 
@@ -406,6 +407,23 @@
             this.tabPage3.Size = new System.Drawing.Size(231, 222);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Filters";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(16, 145);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(71, 12);
+            this.label5.TabIndex = 8;
+            this.label5.Text = "Sigma (KDE):";
+            // 
+            // KDESigma_TextBox
+            // 
+            this.KDESigma_TextBox.Location = new System.Drawing.Point(88, 140);
+            this.KDESigma_TextBox.Name = "KDESigma_TextBox";
+            this.KDESigma_TextBox.Size = new System.Drawing.Size(140, 22);
+            this.KDESigma_TextBox.TabIndex = 7;
+            this.KDESigma_TextBox.Text = "150";
             // 
             // DiscardSmallest_Button
             // 
@@ -667,23 +685,6 @@
             this.LoadConfig_Button.Text = "Load";
             this.LoadConfig_Button.UseVisualStyleBackColor = true;
             this.LoadConfig_Button.Click += new System.EventHandler(this.LoadConfig_Button_Click);
-            // 
-            // KDESigma_TextBox
-            // 
-            this.KDESigma_TextBox.Location = new System.Drawing.Point(88, 140);
-            this.KDESigma_TextBox.Name = "KDESigma_TextBox";
-            this.KDESigma_TextBox.Size = new System.Drawing.Size(140, 22);
-            this.KDESigma_TextBox.TabIndex = 7;
-            this.KDESigma_TextBox.Text = "150";
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(16, 145);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(71, 12);
-            this.label5.TabIndex = 8;
-            this.label5.Text = "Sigma (KDE):";
             // 
             // Form1
             // 
