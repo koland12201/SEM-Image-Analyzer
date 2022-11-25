@@ -318,14 +318,14 @@
             // ExportContour_Button
             // 
             this.ExportContour_Button.Name = "ExportContour_Button";
-            this.ExportContour_Button.Size = new System.Drawing.Size(180, 22);
+            this.ExportContour_Button.Size = new System.Drawing.Size(155, 22);
             this.ExportContour_Button.Text = "Export Contour";
             this.ExportContour_Button.Click += new System.EventHandler(this.ExportContour_Button_Click);
             // 
             // ExportArea_Button
             // 
             this.ExportArea_Button.Name = "ExportArea_Button";
-            this.ExportArea_Button.Size = new System.Drawing.Size(180, 22);
+            this.ExportArea_Button.Size = new System.Drawing.Size(155, 22);
             this.ExportArea_Button.Text = "Export Area";
             this.ExportArea_Button.Click += new System.EventHandler(this.ExportArea_Button_Click);
             // 
@@ -342,14 +342,14 @@
             // areaDistributionToolStripMenuItem
             // 
             this.areaDistributionToolStripMenuItem.Name = "areaDistributionToolStripMenuItem";
-            this.areaDistributionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.areaDistributionToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.areaDistributionToolStripMenuItem.Text = "Area Distribution";
             this.areaDistributionToolStripMenuItem.Click += new System.EventHandler(this.distributionToolStripMenuItem_Click);
             // 
             // colorHistogramToolStripMenuItem
             // 
             this.colorHistogramToolStripMenuItem.Name = "colorHistogramToolStripMenuItem";
-            this.colorHistogramToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.colorHistogramToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.colorHistogramToolStripMenuItem.Text = "Color Histogram";
             this.colorHistogramToolStripMenuItem.Click += new System.EventHandler(this.colorHistogramToolStripMenuItem_Click);
             // 
@@ -366,21 +366,21 @@
             // rawImageInROIToolStripMenuItem1
             // 
             this.rawImageInROIToolStripMenuItem1.Name = "rawImageInROIToolStripMenuItem1";
-            this.rawImageInROIToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.rawImageInROIToolStripMenuItem1.Size = new System.Drawing.Size(167, 22);
             this.rawImageInROIToolStripMenuItem1.Text = "Raw Image in ROI";
             this.rawImageInROIToolStripMenuItem1.Click += new System.EventHandler(this.ShowRawImg_Button_Click);
             // 
             // binarizationToolStripMenuItem1
             // 
             this.binarizationToolStripMenuItem1.Name = "binarizationToolStripMenuItem1";
-            this.binarizationToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.binarizationToolStripMenuItem1.Size = new System.Drawing.Size(167, 22);
             this.binarizationToolStripMenuItem1.Text = "Binarization";
             this.binarizationToolStripMenuItem1.Click += new System.EventHandler(this.BinarizationVew_Button_Click);
             // 
             // contourToolStripMenuItem1
             // 
             this.contourToolStripMenuItem1.Name = "contourToolStripMenuItem1";
-            this.contourToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.contourToolStripMenuItem1.Size = new System.Drawing.Size(167, 22);
             this.contourToolStripMenuItem1.Text = "Contour";
             this.contourToolStripMenuItem1.Click += new System.EventHandler(this.ContourView_Button_Click);
             // 
@@ -705,6 +705,7 @@
             this.Controls.Add(this.Report_RichTextBox);
             this.Controls.Add(this.tabControl1);
             this.MainMenuStrip = this.menuStrip1;
+            this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "SEM Analyser - koland #x";
             this.Load += new System.EventHandler(this.Form1_Load);

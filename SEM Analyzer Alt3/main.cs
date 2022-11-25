@@ -918,12 +918,22 @@ namespace SEM_Analyzer_Alt3
 
         private void ScaledUnit_TextBox_Changed(object sender, EventArgs e)
         {
-            try
+            if (ScaledUnit_TextBox.Text.Split(' ')[0]=="?")
             {
-                UpdatePxScaling();
+                PixelSize = 1;
+                ScaleBarPx = 1;
+                ImageZoomLevel = 1;
+                MeasUnit = "px";
             }
-            catch
+            else
             {
+                try
+                {
+                    UpdatePxScaling();
+                }
+                catch
+                {
+                }
             }
             LoadImage();
         }
